@@ -76,9 +76,9 @@ class BaseModel():
 
     @classmethod
     def all(cls):
-        objs = {}
+        objs = []
         for obj in cls.query.all():
-            objs[obj.id] = obj.to_dict()
+            objs.append(obj.code)
         return objs
 
     @classmethod
