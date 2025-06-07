@@ -119,7 +119,7 @@ def viewStream():
                         label=f"Download {clss.code}.xlsx file",
                         data=file,
                         file_name=f"{clss.code}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
                     )
                     
             except FileNotFoundError:
