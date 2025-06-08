@@ -51,4 +51,11 @@ class Workbook:
 
         if db[cell].value == subject:
             return cell
-        
+
+
+    def close(self):
+        self.__workbook.close()
+
+
+    def reload(self):
+        self.__workbook = load_workbook(self.filePath)
