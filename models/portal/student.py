@@ -46,7 +46,7 @@ class Student(Admission):
         Returns:
             _type_: dict
         """        
-        new_dict = self.__dict__.copy()
+        new_dict = {}
         new_dict.pop("_sa_instance_state", None)
         
         new_dict["created_at"] = self.created_at.isoformat()
@@ -59,3 +59,17 @@ class Student(Admission):
         
                 
         return new_dict
+
+    def subjects_to_dict(self):
+        """dictionary representation of class instance
+
+        Returns:
+            _type_: dict
+        """        
+        subjects = self.subjects
+
+        new_dict ={sub.name : sub.view_dict() for sub in subjects}
+        
+                
+        return new_dict
+

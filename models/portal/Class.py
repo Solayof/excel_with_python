@@ -123,5 +123,18 @@ class Class(BaseModel, Base):
     @property
     def sheetSubjects(self):
         return self.getSheet().dbSubjects()
+    
+
+    def students_to_dict(self):
+        """dictionary representation of class instance
+
+        Returns:
+            _type_: dict
+        """
+        students = self.students  
+        new_dict = [{"FULLNAME": std.fullName, "NUMBER OF SUBJECTS RECORDED": len(std.subjects)} for std in students]
+
+        return new_dict
+        
 
 

@@ -36,18 +36,41 @@ class Subject(BaseModel, Base):
     
     
     
-def to_dict(self):
-    """dictionary representation of class instance
+    def to_dict(self):
+        """dictionary representation of class instance
 
-    Returns:
-        _type_: dict
-    """        
-    new_dict = self.__dict__.copy()
-    new_dict.pop("_sa_instance_state", None)
-    new_dict.pop("_password", None)
-    new_dict["created_at"] = self.created_at.isoformat()
-    new_dict["updated_at"] = self.updated_at.isoformat()
+        Returns:
+            _type_: dict
+        """        
+        new_dict = self.__dict__.copy()
+        new_dict.pop("_sa_instance_state", None)
+        new_dict.pop("_password", None)
+        new_dict["created_at"] = self.created_at.isoformat()
+        new_dict["updated_at"] = self.updated_at.isoformat()
+        
+        
+        return new_dict
+
+    def view_dict(self):
+        """dictionary representation of class instance
+
+        Returns:
+            _type_: dict
+        """        
+        new_dict = {}
+
+        new_dict["CA"] = self.CA
+        new_dict["Exam"] = self.examScore
+        new_dict["Second Term Score"] = self.secondTermScore
+        new_dict["First Term Score"] = self.firstTermScore
+        
+        
+        return new_dict
     
-    
-    return new_dict
+
+    @classmethod
+    def all(cls):
+        objs = {}
+        return objs
+
 
