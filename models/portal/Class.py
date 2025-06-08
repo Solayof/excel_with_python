@@ -91,35 +91,33 @@ class Class(BaseModel, Base):
         students = self.students
         worksheet = self.getSheet()
         worksheet.open_session()
+        sheet = worksheet.getDbsheet()
 
         stdcell = "b4"
+        stdrow, stdcol = coordinate_to_tuple(stdcell)
         for student in students:
-            worksheet.writeCell(cell=stdcell, value=student.fullName)
+            sheet.cell(stdrow, stdcol, student.fullName)
             subjects = student.subjects
-            stdrow, stdcol = coordinate_to_tuple(stdcell)
-            admnocell = f"{get_column_letter(stdcol + 1)}{stdrow}"
-            worksheet.writeCell(cell=admnocell, value=student.admission_no)
-            gendercell = f"{get_column_letter(stdcol + 2)}{stdrow}"
-            worksheet.writeCell(cell=gendercell, value=student.gender)
-            classcell = f"{get_column_letter(stdcol + 3)}{stdrow}"
-            worksheet.writeCell(cell=classcell, value=student.classroom.className)
+    
+            sheet.cell(stdrow, stdcol + 1, student.admission_no)
+
+            
+            sheet.cell(stdrow, stdcol + 2, student.gender)
+            
+            sheet.cell(stdrow, stdcol + 4, student.classroom.className)
             for subject in subjects:
                 subCell = worksheet.getSubjectCell(subject=subject.name)
                 _, subcol = coordinate_to_tuple(subCell)
 
-                CAcell = f"{get_column_letter(subcol)}{stdrow}"
-                worksheet.writeCell(cell=CAcell, value=subject.CA)
-                examcell = f"{get_column_letter(subcol + 1)}{stdrow}"
-                worksheet.writeCell(cell=examcell, value=subject.examScore)
-                scdtermcell = f"{get_column_letter(subcol + 3)}{stdrow}"
-                worksheet.writeCell(cell=scdtermcell, value=subject.secondTermScore)
-                frttermcell = f"{get_column_letter(subcol + 4)}{stdrow}"
-                worksheet.writeCell(cell=frttermcell, value=subject.firstTermScore)
+                sheet.cell(stdrow, subcol, subject.CA)
+
+                sheet.cell(stdrow, subcol + 1, subject.examScore)
+
+                sheet.cell(stdrow, subcol + 3, subject.secondTermScore)
+
+                sheet.cell(stdrow, subcol + 4, subject.firstTermScore)
                 
-
-
-            stdcell = f"{get_column_letter(stdcol)}{stdrow + 1}"
-
+            stdrow = stdrow + 1
         worksheet.saveWorkbook(self.code)
 
     @property
