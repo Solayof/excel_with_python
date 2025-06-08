@@ -18,8 +18,9 @@ if __name__ == "__main__":
     storage.create_table()
 
 def viewStream():
+    st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
     st.title("Broadsheet Database")
-    menu = st.sidebar.selectbox("Menu", ["Add class", "Add student", "Upload score", "Generate sheet", "Download sheet"])
+    menu = st.sidebar.selectbox("Menu", ["Add class", "Add student", "Upload score", "Generate sheet", "Download sheet", "View student scores", "View class", "Delete sudent"])
 
     if menu == "Add class":
         st.header("Add Classes")
@@ -85,6 +86,7 @@ def viewStream():
             for std in students:
                 if std.fullName == name:
                     std_id = std.id
+                    break
             
             subject = Subject()
             subject.name = subjectname
@@ -107,6 +109,47 @@ def viewStream():
             clss.generateSheet()
             st.success(f"sheet with file name: {code}.xlsx generated successfully")
 
+
+    if menu == "View student scores":
+        st.header("Student Scores")
+
+        code = st.selectbox("Class", Class.all())
+        stdlist = []
+    
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+            students = clss.students
+            if not students:
+                return
+            stdlist = [std.fullName for std in students]
+
+            name = st.selectbox("Name", stdlist)
+
+            for std in students:
+                    if std.fullName == name:
+                        student = std
+                        break
+
+            df = pd.DataFrame(student.subjects_to_dict())
+
+            print(df)
+
+            st.dataframe(df)
+    
+    if menu == "View class":
+        st.title("View Classes")
+        code = st.selectbox("Class", Class.all())
+        stdlist = []
+    
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+
+            df = pd.DataFrame(clss.students_to_dict())
+
+            st.dataframe(df)
+
+
+
     if menu == "Download sheet":
         st.header("Download Sheet")
         code = st.selectbox("Class", Class.all())
@@ -124,7 +167,26 @@ def viewStream():
                     
             except FileNotFoundError:
                 st.error("Generate sheet for the class first")
-            
+
+
+    if menu == "Delete sudent":
+        st.header("Upload Scores")
+        code = st.selectbox("Class", Class.all())
+        subjectlist = []
+        stdlist = []
+    
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+            subjectlist = clss.sheetSubjects
+            students = clss.students
+            stdlist = [std.fullName for std in students]
+
+        name = st.selectbox("Name", stdlist)
+        if st.button(f"Delete {name}") and name and students:
+            for std in students:
+                        if std.fullName == name:
+                            std.delete()
+                            break
 
         
 
