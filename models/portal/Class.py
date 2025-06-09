@@ -104,7 +104,7 @@ class Class(BaseModel, Base):
             
             sheet.cell(stdrow, stdcol + 2, student.gender)
             
-            sheet.cell(stdrow, stdcol + 4, student.classroom.className)
+            sheet.cell(stdrow, stdcol + 3, student.classroom.className)
             for subject in subjects:
                 subCell = worksheet.getSubjectCell(subject=subject.name)
                 _, subcol = coordinate_to_tuple(subCell)
