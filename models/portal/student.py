@@ -47,15 +47,15 @@ class Student(Admission):
             _type_: dict
         """        
         new_dict = {}
-        new_dict.pop("_sa_instance_state", None)
+        new_dict["FullName"] = self.fullName
         
-        new_dict["created_at"] = self.created_at.isoformat()
+        new_dict["Gender"] = self.gender
 
-        new_dict["updated_at"] = self.updated_at.isoformat()
+        new_dict["Admission Number"] = self.admission_no
         
         
         classroom = self.classroom
-        new_dict["classroom_id"] = classroom.id if classroom else None
+        new_dict["classroom"] = classroom.className if classroom else None
         
                 
         return new_dict
@@ -72,4 +72,9 @@ class Student(Admission):
         
                 
         return new_dict
+    
+    def subject_recoeded(self):
+        subjects = self.subjects
+
+        return [sub.name for sub in subjects]
 
