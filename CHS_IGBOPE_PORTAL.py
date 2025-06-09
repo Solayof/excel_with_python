@@ -247,21 +247,21 @@ def viewStream():
                 subjectname = st.selectbox("Subject", subjectlist)
         
                 subject = Subject.query.filter_by(student_id=stud.id, name=subjectname).one_or_none()
-        if stud and subject:
-            ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
-            exam = st.number_input("Third Term Score", 0, 70, subject.examScore)
-            firstTermScore = st.number_input("First Term Score", 0, 100, subject.firstTermScore)
-            secondTermScorce = st.number_input("Second Term Score", 0, 100, subject.secondTermScore)
-            
-            if st.button("Update"):
+                if stud and subject:
+                    ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
+                    exam = st.number_input("Third Term Score", 0, 70, subject.examScore)
+                    firstTermScore = st.number_input("First Term Score", 0, 100, subject.firstTermScore)
+                    secondTermScorce = st.number_input("Second Term Score", 0, 100, subject.secondTermScore)
+                    
+                    if st.button("Update"):
 
-                subject.CA = ca
-                subject.examScore = exam
-                subject.firstTermScore = firstTermScore
-                subject.secondTermScore = secondTermScorce
-                subject.save()
+                        subject.CA = ca
+                        subject.examScore = exam
+                        subject.firstTermScore = firstTermScore
+                        subject.secondTermScore = secondTermScorce
+                        subject.save()
 
-                st.success("score updated successfully")
+                        st.success("score updated successfully")
 
 
 
