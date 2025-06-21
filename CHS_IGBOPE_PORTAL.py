@@ -2,6 +2,7 @@
 from io import BytesIO
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from models import storage
 
 
@@ -20,8 +21,11 @@ if __name__ == "__main__":
 def viewStream():
     st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
     st.title("Broadsheet Database")
-    menu = st.sidebar.selectbox("Menu", ["Add class", "Add student", "Edit Student", "Upload score", "Update score", "Generate sheet", "Download sheet", "View student scores", "View class", "Delete sudent"])
-
+    menu = st.sidebar.selectbox("Menu", [
+        "Add class", "Add student", "Edit Student", "Upload score", "Update score",
+        "Generate sheet", "Download sheet", "View student scores", "View class", 
+        "Delete sudent", "Performance Analytics"
+    ])
     if menu == "Add class":
         st.header("Add Classes")
         room = st.selectbox("classroom", ["JSS 1", "JSS 2", "JSS 3", 'SSS 1', 'SSS 2', 'SSS 3'])
@@ -228,6 +232,58 @@ def viewStream():
                 st.dataframe(pd.DataFrame([stud.to_dict()]))
                 st.success("Updated successfuly")
 
+    if menu == "Performance Analytics":
+        st.header("📈 Performance Analytics")
+        code = st.selectbox("Select Class", Class.all())
+
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+            students = clss.students
+
+            if not students:
+                st.warning("No students found in this class.")
+            else:
+                # Collect student performance
+                performance_data = []
+                for student in students:
+                    scores = student.subjects_to_dict()
+                    if scores:
+                        total_score = sum([sum(sub.values())/3 for sub in scores.values()])
+                        avg_score = total_score / len(scores)
+                        performance_data.append({
+                            "Name": student.fullName,
+                            "Average Score": avg_score,
+                        })
+
+                if performance_data:
+                    df_perf = pd.DataFrame(performance_data).sort_values(by="Average Score", ascending=False)
+
+                    st.subheader("Average Scores Per Student")
+                    st.dataframe(df_perf)
+
+                    # Bar chart for average scores
+                    fig = px.bar(df_perf, x="Name", y="Average Score", 
+                                title=f"Class {code} - Average Performance",
+                                labels={"Average Score": "Avg Score"}, 
+                                color="Average Score", height=500)
+                    st.plotly_chart(fig, use_container_width=True)
+
+                    # Grade Distribution
+                    def grade(score):
+                        if score >= 70: return "A"
+                        elif score >= 60: return "B"
+                        elif score >= 50: return "C"
+                        elif score >= 40: return "D"
+                        else: return "F"
+
+                    df_perf["Grade"] = df_perf["Average Score"].apply(grade)
+                    grade_dist = df_perf["Grade"].value_counts().reset_index()
+                    grade_dist.columns = ["Grade", "Count"]
+
+                    st.subheader("Grade Distribution")
+                    fig2 = px.pie(grade_dist, names="Grade", values="Count", title="Grade Breakdown")
+                    st.plotly_chart(fig2)
+
     if menu == "Update score":
         st.header("Update Scores")
         code = st.selectbox("Class", Class.all())
@@ -266,7 +322,7 @@ def viewStream():
 
 
 
-        
+        # arisekola77
 
 
 
