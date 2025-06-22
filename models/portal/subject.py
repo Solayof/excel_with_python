@@ -22,7 +22,7 @@ class Subject(BaseModel, Base):
     """
     __tablename__ = "subjects"
     extend_existing = True
-    name = Column(String(20), nullable=False, unique=True)
+    name = Column(String(20), nullable=False)
     CA = Column(Integer())
     examScore = Column(Integer())
     firstTermScore = Column(Integer())
