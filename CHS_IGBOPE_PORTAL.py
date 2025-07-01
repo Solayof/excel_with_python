@@ -76,7 +76,7 @@ def viewStream():
             
             students = clss.students
             if students:
-                students.sort(key=lambda s: s.lastName)
+                students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
             name = st.selectbox("Name", stdlist)
             for std in students:
@@ -128,7 +128,7 @@ def viewStream():
             students = clss.students
             if not students:
                 return
-            students.sort(key=lambda s: s.lastName)
+            students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
 
             name = st.selectbox("Name", stdlist)
@@ -152,7 +152,7 @@ def viewStream():
         if code:
             clss = Class.query.filter_by(code=code).one()
 
-            df = pd.DataFrame(clss.students_to_dict()).so
+            df = pd.DataFrame(clss.students_to_dict())
 
             st.dataframe(df)
 
@@ -188,7 +188,7 @@ def viewStream():
             subjectlist = clss.sheetSubjects
             students = clss.students
             if students:
-                students.sort(key=lambda s: s.lastName)
+                students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
 
         name = st.selectbox("Name", stdlist)
@@ -196,6 +196,8 @@ def viewStream():
             for std in students:
                         if std.fullName == name:
                             std.delete()
+                            st.success(f"{std.fullName} deleted successfully")
+                            st.dataframe(pd.DataFrame([std.to_dict()]))
                             break
     
 
@@ -209,7 +211,7 @@ def viewStream():
             clss = Class.query.filter_by(code=code).one()
             students = clss.students
             if students:
-                students.sort(key=lambda s: s.lastName)
+                students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
 
         name = st.selectbox("Name", stdlist)
@@ -252,7 +254,7 @@ def viewStream():
             else:
                 # Collect student performance
                 performance_data = []
-                for student in students.sort(key=lambda s: s.lastName):
+                for student in students:
                     scores = student.subjects_to_dict()
                     if scores:
                         total_score = sum([sum(sub.values())/3 for sub in scores.values()])
@@ -299,7 +301,7 @@ def viewStream():
             clss = Class.query.filter_by(code=code).one()
             students = clss.students
             if students:
-                students.sort(key=lambda s: s.lastName)
+                students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
             name = st.selectbox("Name", stdlist)
             

@@ -52,7 +52,7 @@ class UserModel(BaseModel):
         Returns:
             _type_: string
         """        
-        return f"{self.firstName} {self.middleName if self.middleName else ''} {self.lastName}"
+        return f"{self.lastName} {self.firstName} {self.middleName if self.middleName else ''}"
     
     def __repr__(self):
         """string representation
