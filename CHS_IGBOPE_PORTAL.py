@@ -268,7 +268,15 @@ def viewStream():
                 if performance_data:
                     df_perf = pd.DataFrame(performance_data).sort_values(by="Average Score", ascending=False)
 
+                    # Grade Distribution
+                    def grade(score):
+                        if score >= 70: return "A"
+                        elif score >= 60: return "B"
+                        elif score >= 50: return "C"
+                        elif score >= 40: return "D"
+                        else: return "F"
                     st.subheader("Average Scores Per Student")
+                    df_perf["Grade"] = df_perf["Average Score"].apply(grade)
                     st.dataframe(df_perf)
 
                     # Bar chart for average scores
@@ -278,15 +286,8 @@ def viewStream():
                                 color="Average Score", height=500)
                     st.plotly_chart(fig, use_container_width=True)
 
-                    # Grade Distribution
-                    def grade(score):
-                        if score >= 70: return "A"
-                        elif score >= 60: return "B"
-                        elif score >= 50: return "C"
-                        elif score >= 40: return "D"
-                        else: return "F"
+                    
 
-                    df_perf["Grade"] = df_perf["Average Score"].apply(grade)
                     grade_dist = df_perf["Grade"].value_counts().reset_index()
                     grade_dist.columns = ["Grade", "Count"]
 
