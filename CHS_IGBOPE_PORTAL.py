@@ -190,15 +190,16 @@ def viewStream():
             if students:
                 students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
-
-        name = st.selectbox("Name", stdlist)
-        if st.button(f"Delete {name}") and name and students:
-            for std in students:
-                        if std.fullName == name:
-                            std.delete()
-                            st.success(f"{std.fullName} deleted successfully")
-                            st.dataframe(pd.DataFrame([std.to_dict()]))
-                            break
+        if stdlist:
+            st.info("Select a student to delete")
+            name = st.selectbox("Name", stdlist)
+            if st.button(f"Delete {name}") and name and students:
+                for std in students:
+                    if std.fullName == name:
+                        std.delete()
+                        st.success(f"{std.fullName} deleted successfully")
+                        st.dataframe(pd.DataFrame([std.to_dict()]))
+                        break
     
 
     if menu == "Edit Student":
