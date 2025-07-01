@@ -89,6 +89,7 @@ class Class(BaseModel, Base):
     
     def generateSheet(self):
         students = self.students
+        students.sort(key=lambda s: s.lastName)
         worksheet = self.getSheet()
         worksheet.open_session()
         sheet = worksheet.getDbsheet()
@@ -131,7 +132,8 @@ class Class(BaseModel, Base):
         Returns:
             _type_: dict
         """
-        students = self.students  
+        students = self.students
+        students.sort(key=lambda s: s.lastName)
         new_dict = [{"FULLNAME": std.fullName, "NUMBER OF SUBJECTS RECORDED": len(std.subjects)} for std in students]
 
         return new_dict
