@@ -23,10 +23,10 @@ class Subject(BaseModel, Base):
     __tablename__ = "subjects"
     extend_existing = True
     name = Column(String(20), nullable=False)
-    CA = Column(Integer())
-    examScore = Column(Integer())
-    firstTermScore = Column(Integer())
-    secondTermScore = Column(Integer())
+    CA = Column(Integer(), default=0)
+    examScore = Column(Integer(), default=0)
+    firstTermScore = Column(Integer(), default=0)
+    secondTermScore = Column(Integer(), default=0)
     student_id = Column(String(36), ForeignKey("students._id"))
     student = relationship("Student",
         foreign_keys=[student_id],

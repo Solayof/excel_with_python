@@ -88,11 +88,11 @@ def viewStream():
        
         subjectname = st.selectbox("Subject", subjectlist)
         ca = st.number_input("Continuous Assessment", 0, 30)
-        exam = st.number_input("Third Term Score", 0, 70)
+        exam = st.number_input("Third Term Score (Just the exam score)", 0, 70)
         firstTermScore = st.number_input("First Term Score", 0, 100)
         secondTermScorce = st.number_input("Second Term Score", 0, 100)
 
-        if st.button("upload score") and name and subjectname and ca and exam and firstTermScore and secondTermScorce:
+        if st.button("upload score") and name and subjectname and ca:
             
             
             subject = Subject()
