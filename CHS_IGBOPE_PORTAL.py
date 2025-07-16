@@ -22,7 +22,7 @@ def viewStream():
     st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
     st.title("Broadsheet Database")
     menu = st.sidebar.selectbox("Menu", [
-        "Add class", "Add student", "Edit Student", "Upload score", "Update score",
+        "Add class", "Add student", "Edit Student", "Change Student Class", "Upload score", "Update score",
         "Generate sheet", "Download sheet", "View student scores", "View class", 
         "Delete sudent", "Performance Analytics"
     ])
@@ -92,12 +92,12 @@ def viewStream():
         firstTermScore = st.number_input("First Term Score", 0, 100)
         secondTermScorce = st.number_input("Second Term Score", 0, 100)
 
-        if st.button("upload score") and name and subjectname and ca:
+        if st.button("upload score") and name and subjectname:
             
-            if firstTermScore == 0 and secondTermScorce == 0:
+            if firstTermScore == 0 and secondTermScorce == 0 and exam and ca:
                 firstTermScore = exam + ca
                 secondTermScorce = firstTermScore
-            if firstTermScore == 0:
+            if firstTermScore == 0 and exam and ca and secondTermScorce:
                 firstTermScore = round((secondTermScorce + exam + ca) / 2)
             subject = Subject()
             subject.name = subjectname
@@ -310,6 +310,33 @@ def viewStream():
                     st.subheader("Grade Distribution")
                     fig2 = px.pie(grade_dist, names="Grade", values="Count", title="Grade Breakdown")
                     st.plotly_chart(fig2)
+    if menu == "Change Student Class":
+        st.header("Change Class or Promote Student")
+        code = None
+        code = st.selectbox("Class", Class.all())
+        stud = None
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+            students = clss.students
+            if students:
+                students.sort(key=lambda s: s.fullName)
+            stdlist = [std.fullName for std in students]
+            name = st.selectbox("Name", stdlist)
+
+            if name:
+                for std in students:
+                    if std.fullName == name:
+                            stud = std
+                            break
+        class_to_code = st.selectbox("Class To", [room for room in Class.all() if room != code])
+        if class_to_code:
+            clss_to = Class.query.filter_by(code=class_to_code).one()
+
+            if st.button("Change Class") and stud and clss_to:
+                stud.classroom_id = clss_to.id
+                stud.save()
+                st.dataframe(pd.DataFrame([stud.to_dict()]))
+                st.success("Class changed successfully")
 
     if menu == "Update score":
         st.header("Update Scores")
@@ -334,7 +361,7 @@ def viewStream():
                 subject = Subject.query.filter_by(student_id=stud.id, name=subjectname).one_or_none()
                 if stud and subject:
                     ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
-                    exam = st.number_input("Third Term Score", 0, 70, subject.examScore)
+                    exam = st.number_input("Third Term Score (Just the exam score)", 0, 70, subject.examScore)
                     firstTermScore = st.number_input("First Term Score", 0, 100, subject.firstTermScore)
                     secondTermScorce = st.number_input("Second Term Score", 0, 100, subject.secondTermScore)
                     
