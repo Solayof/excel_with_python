@@ -94,7 +94,11 @@ def viewStream():
 
         if st.button("upload score") and name and subjectname and ca:
             
-            
+            if firstTermScore == 0 and secondTermScorce == 0:
+                firstTermScore = exam + ca
+                secondTermScorce = firstTermScore
+            if firstTermScore == 0:
+                firstTermScore = round((secondTermScorce + exam + ca) / 2)
             subject = Subject()
             subject.name = subjectname
             subject.student_id = student.id
@@ -138,11 +142,23 @@ def viewStream():
                         student = std
                         break
 
-            df = pd.DataFrame(student.subjects_to_dict())
-
-            print(df)
-
-            st.dataframe(df)
+            subjects = student.subjects_to_dict()
+            df = pd.DataFrame(subjects)
+            
+            if subjects:
+                st.dataframe(df)
+                sub_analysis = [
+                    {
+                        "Subject": name,
+                        "Average Score": sum(sub.values()) / 3
+                    } for name, sub in subjects.items()
+                ]
+                subdf = pd.DataFrame(sub_analysis)
+                fig = px.bar(subdf, x="Subject", y="Average Score", 
+                                    title=f"Class {code} - {student.fullName}",
+                                    labels={"Average Score": "Avg Score"}, 
+                                    color="Average Score", height=500)
+                st.plotly_chart(fig, use_container_width=True)
     
     if menu == "View class":
         st.title("View Classes")
@@ -323,6 +339,11 @@ def viewStream():
                     secondTermScorce = st.number_input("Second Term Score", 0, 100, subject.secondTermScore)
                     
                     if st.button("Update"):
+                        if firstTermScore == 0 and secondTermScorce == 0:
+                            firstTermScore = exam + ca
+                            secondTermScorce = firstTermScore
+                        if firstTermScore == 0:
+                            firstTermScore = round((secondTermScorce + exam + ca) / 2)
 
                         subject.CA = ca
                         subject.examScore = exam
