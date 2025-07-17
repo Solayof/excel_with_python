@@ -44,8 +44,8 @@ def viewStream():
     st.title("Broadsheet Database")
     menu = st.sidebar.selectbox("Menu", [
         "Add class", "Add student", "Edit Student", "Change Student Class", "Upload score", "Update score", "Subject Recorded",
-        "Generate sheet", "Download sheet", "View student scores", "View class", "Upload CSV Record", "Delete Students Score",
-        "Delete sudent", "Performance Analytics"
+        "Generate sheet", "Download sheet", "View student scores", "View class", "Upload CSV Record", "Report Sheets",
+        "Delete Students Score","Delete sudent", "Performance Analytics"
     ])
     if menu == "Add class":
         st.header("Add Classes")
@@ -409,6 +409,33 @@ def viewStream():
         if st.button("Upload") and csv_text:
             data = pd.read_csv(StringIO(csv_text))
             st.dataframe(pd.DataFrame(data))
+
+    if menu == "Report Sheets":
+        st.header("Report Sheet")
+        code = st.selectbox("Class", getClassrooms())
+    
+        if code:
+            fullNameId = getStudentsIdandNames(code)
+            name = st.selectbox("Name", fullNameId.keys())
+            if name:
+                stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+            if stud:
+                subjects = stud.subjects
+                subjectList = []
+                for sub in subjects:
+                    obj = {}
+                    obj["Subject"] = sub.name
+                    obj["CA"] = sub.CA
+                    obj["EXAM SCORE"] = sub.examScore
+                    obj["FIRST TERM SCORE"] = sub.firstTermScore
+                    obj["SECOND TERM SCORE"] = sub.secondTermScore
+                    subjectList.append(obj)
+                subjectlist = [sub for sub in getclassSubjects(code) if sub not in stud.subject_recoeded()]
+                for sub in subjectlist:
+                    obj = {}
+                    obj["Subject"] = sub
+                    subjectList.append(obj)
+                st.dataframe(pd.DataFrame(subjectList))
 
 
 
