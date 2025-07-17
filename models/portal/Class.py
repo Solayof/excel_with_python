@@ -81,8 +81,7 @@ class Class(BaseModel, Base):
         return new_dict
     
     def getSheet(self):
-        filePath = f"{self.className[:3]}.xlsx"
-        worksheet = Workbook(filePath=filePath)
+        worksheet = Workbook(filePath=f"{self.code}.xlsx", defaultFile=f"{self.className[:3]}.xlsx")
         worksheet.open_session()
 
         return worksheet
@@ -137,6 +136,18 @@ class Class(BaseModel, Base):
         new_dict = [{"FULLNAME": std.fullName, "NUMBER OF SUBJECTS RECORDED": len(std.subjects)} for std in students]
 
         return new_dict
+    
+    # def getStudentsFullName(self):
+    #     students = self.students
+    #     students.sort(key=lambda s: s.fullName)
+    #     return [std.fullName for std in students]
+    
+    def getStudentsIdandNames(self):
+        students = self.students
+        students.sort(key=lambda s: s.fullName)
+        return {std.fullName: std.id for std in students}
+        
+
         
 
 
