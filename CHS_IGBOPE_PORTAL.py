@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from io import BytesIO
+from io import BytesIO, StringIO
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -17,13 +17,26 @@ from models.portal.user import User
 
 if __name__ == "__main__":
     storage.create_table()
+@st.cache_data(ttl=5000)
+def getClassroom():
+    return Class.all()
+
+@st.cache_data(ttl=5000)
+def getStudentsIdandNames(code):
+    clss = Class.query.filter_by(code=code).one()
+    return clss.getStudentsIdandNames()
+
+@st.cache_data(ttl=5000)
+def getclassSubjects(code):
+     clss = Class.query.filter_by(code=code).one()
+     return clss.sheetSubjects
 
 def viewStream():
     st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
     st.title("Broadsheet Database")
     menu = st.sidebar.selectbox("Menu", [
-        "Add class", "Add student", "Edit Student", "Change Student Class", "Upload score", "Update score",
-        "Generate sheet", "Download sheet", "View student scores", "View class", 
+        "Add class", "Add student", "Edit Student", "Change Student Class", "Upload score", "Update score", "Subject Recorded",
+        "Generate sheet", "Download sheet", "View student scores", "View class", "Upload CSV Record", "Delete Students Score",
         "Delete sudent", "Performance Analytics"
     ])
     if menu == "Add class":
@@ -42,7 +55,7 @@ def viewStream():
         st.header("Add Students")
         st.info("Please ensure not two students with the same full name are the same arm")
         st.info("Please enter the form manually dont autofill")
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
         if code:
             clss = Class.query.filter_by(code=code).one()
         firstName = st.text_input("First Name", placeholder="First Name")
@@ -69,24 +82,16 @@ def viewStream():
 
     if menu == "Upload score":
         st.header("Upload Scores")
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
-            
-            students = clss.students
-            if students:
-                students.sort(key=lambda s: s.fullName)
-            stdlist = [std.fullName for std in students]
-            name = st.selectbox("Name", stdlist)
-            for std in students:
-                if std.fullName == name:
-                    student = std
-                    subjectlist = [sub for sub in clss.sheetSubjects if sub not in student.subject_recoeded()]
-                    break
-
+            fullNameId = getStudentsIdandNames(code)
+            name = st.selectbox("Name", fullNameId.keys())
+            if name:
+                student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+                subjectlist = [sub for sub in getclassSubjects(code) if sub not in student.subject_recoeded()]
        
-        subjectname = st.selectbox("Subject", subjectlist)
+                subjectname = st.selectbox("Subject", subjectlist)
         ca = st.number_input("Continuous Assessment", 0, 30)
         exam = st.number_input("Third Term Score (Just the exam score)", 0, 70)
         firstTermScore = st.number_input("First Term Score", 0, 100)
@@ -113,7 +118,7 @@ def viewStream():
 
     if menu == "Generate sheet":
         st.header("Generate Sheet")
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
         if code:
             clss = Class.query.filter_by(code=code).one()
         if st.button("Generate Sheet") and clss:
@@ -124,46 +129,37 @@ def viewStream():
     if menu == "View student scores":
         st.header("Student Scores")
 
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
         stdlist = []
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
-            students = clss.students
-            if not students:
-                return
-            students.sort(key=lambda s: s.fullName)
-            stdlist = [std.fullName for std in students]
+            fullNameId = getStudentsIdandNames(code)
+            name = st.selectbox("Name", fullNameId.keys())
 
-            name = st.selectbox("Name", stdlist)
-
-            for std in students:
-                    if std.fullName == name:
-                        student = std
-                        break
-
-            subjects = student.subjects_to_dict()
-            df = pd.DataFrame(subjects)
+            if name:
+                student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+            if student:
+                subjects = student.subjects_to_dict()
+                df = pd.DataFrame(subjects)
             
-            if subjects:
-                st.dataframe(df)
-                sub_analysis = [
-                    {
-                        "Subject": name,
-                        "Average Score": sum(sub.values()) / 3
-                    } for name, sub in subjects.items()
-                ]
-                subdf = pd.DataFrame(sub_analysis)
-                fig = px.bar(subdf, x="Subject", y="Average Score", 
-                                    title=f"Class {code} - {student.fullName}",
-                                    labels={"Average Score": "Avg Score"}, 
-                                    color="Average Score", height=500)
-                st.plotly_chart(fig, use_container_width=True)
+                if subjects:
+                    st.dataframe(df)
+                    sub_analysis = [
+                        {
+                            "Subject": name,
+                            "Average Score": sum(sub.values()) / 3
+                        } for name, sub in subjects.items()
+                    ]
+                    subdf = pd.DataFrame(sub_analysis)
+                    fig = px.bar(subdf, x="Subject", y="Average Score", 
+                                        title=f"Class {code} - {student.fullName}",
+                                        labels={"Average Score": "Avg Score"}, 
+                                        color="Average Score", height=500)
+                    st.plotly_chart(fig, use_container_width=True)
     
     if menu == "View class":
         st.title("View Classes")
-        code = st.selectbox("Class", Class.all())
-        stdlist = []
+        code = st.selectbox("Class", getClassroom())
     
         if code:
             clss = Class.query.filter_by(code=code).one()
@@ -176,7 +172,7 @@ def viewStream():
 
     if menu == "Download sheet":
         st.header("Download Sheet")
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
         if code:
             clss = Class.query.filter_by(code=code).one()
 
@@ -193,53 +189,33 @@ def viewStream():
                 st.error("Generate sheet for the class first")
 
 
-    if menu == "Delete sudent":
+    if menu == "Delete student":
         st.header("Delete Students")
-        code = st.selectbox("Class", Class.all())
-     
-        stdlist = []
+        code = st.selectbox("Class", getClassroom())
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
-            subjectlist = clss.sheetSubjects
-            students = clss.students
-            if students:
-                students.sort(key=lambda s: s.fullName)
-            stdlist = [std.fullName for std in students]
-        if stdlist:
+            fullNameId = getStudentsIdandNames(code)
             st.info("Select a student to delete")
-            name = st.selectbox("Name", stdlist)
-            if st.button(f"Delete {name}") and name and students:
-                for std in students:
-                    if std.fullName == name:
-                        std.delete()
-                        st.success(f"{std.fullName} deleted successfully")
-                        st.dataframe(pd.DataFrame([std.to_dict()]))
-                        break
+            name = st.selectbox("Name", fullNameId.keys())
+
+            if name:
+                student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+            if st.button(f"Delete {name}") and name and student:
+                student.delete()
+                st.success(f"{student.fullName} deleted successfully")
+                st.dataframe(pd.DataFrame([student.to_dict()]))
     
 
     if menu == "Edit Student":
         st.header("Edit Students")
-        code = st.selectbox("Class", Class.all())
-     
-        stdlist = []
-    
+        code = st.selectbox("Class", getClassroom())
+
         if code:
-            clss = Class.query.filter_by(code=code).one()
-            students = clss.students
-            if students:
-                students.sort(key=lambda s: s.fullName)
-            stdlist = [std.fullName for std in students]
+            fullNameId = getStudentsIdandNames(code)
+            name = st.selectbox("Name", fullNameId.keys())
 
-        name = st.selectbox("Name", stdlist)
-        
         if name:
-            for std in students:
-                if std.fullName == name:
-                        stud = std
-                        
-                        break
-
+            stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
             if stud:
                 firstName = st.text_input("First Name", placeholder="First Name", value=stud.firstName)
                 middleName = st.text_input("Middle Name", placeholder="Middle Name", value=stud.middleName)
@@ -260,7 +236,7 @@ def viewStream():
 
     if menu == "Performance Analytics":
         st.header("📈 Performance Analytics")
-        code = st.selectbox("Select Class", Class.all())
+        code = st.selectbox("Select Class", getClassroom())
 
         if code:
             clss = Class.query.filter_by(code=code).one()
@@ -313,22 +289,15 @@ def viewStream():
     if menu == "Change Student Class":
         st.header("Change Class or Promote Student")
         code = None
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
         stud = None
         if code:
-            clss = Class.query.filter_by(code=code).one()
-            students = clss.students
-            if students:
-                students.sort(key=lambda s: s.fullName)
-            stdlist = [std.fullName for std in students]
-            name = st.selectbox("Name", stdlist)
+            fullNameId = getStudentsIdandNames(code)
+            name = st.selectbox("Name", fullNameId.keys())
 
             if name:
-                for std in students:
-                    if std.fullName == name:
-                            stud = std
-                            break
-        class_to_code = st.selectbox("Class To", [room for room in Class.all() if room != code])
+                stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+        class_to_code = st.selectbox("Class To", [room for room in getClassroom() if room != code])
         if class_to_code:
             clss_to = Class.query.filter_by(code=class_to_code).one()
 
@@ -340,26 +309,19 @@ def viewStream():
 
     if menu == "Update score":
         st.header("Update Scores")
-        code = st.selectbox("Class", Class.all())
+        code = st.selectbox("Class", getClassroom())
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
-            students = clss.students
-            if students:
-                students.sort(key=lambda s: s.fullName)
-            stdlist = [std.fullName for std in students]
-            name = st.selectbox("Name", stdlist)
-            
+            fullNameId = getStudentsIdandNames(code)
+            name = st.selectbox("Name", fullNameId.keys())
             if name:
-                for std in students:
-                    if std.fullName == name:
-                            stud = std
-                            break
-                subjectlist = [sub for sub in clss.sheetSubjects if sub in stud.subject_recoeded()]
+                stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+            if stud:
+                subjectlist = [sub for sub in getclassSubjects(code) if sub in stud.subject_recoeded()]
                 subjectname = st.selectbox("Subject", subjectlist)
         
                 subject = Subject.query.filter_by(student_id=stud.id, name=subjectname).one_or_none()
-                if stud and subject:
+                if subject:
                     ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
                     exam = st.number_input("Third Term Score (Just the exam score)", 0, 70, subject.examScore)
                     firstTermScore = st.number_input("First Term Score", 0, 100, subject.firstTermScore)
@@ -380,6 +342,65 @@ def viewStream():
 
                         st.success("score updated successfully")
 
+    if menu == "Subject Recorded":
+        st.header("Subject Recorded")
+        code = st.selectbox("Class", getClassroom())
+    
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+            students = clss.students
+            subjectlist = [sub for sub in getclassSubjects(code)]
+            subjectname = st.selectbox("Subject", subjectlist)
+            studentlist = []
+            for stud in students:
+                obj = {}
+                subject = Subject.query.filter_by(student_id=stud.id, name=subjectname).one_or_none()
+                if subject:
+                    obj["FULLNAME"] = stud.fullName
+                    obj["CA"] = subject.CA
+                    obj["EXAM SCORE"] = subject.examScore
+                    obj["FIRST TERM SCORE"] = subject.firstTermScore
+                    obj["SECOND TERM SCORE"] = subject.secondTermScore
+                else:
+                    obj["FULLNAME"] = stud.fullName
+                studentlist.append(obj)
+
+            st.dataframe(pd.DataFrame(studentlist))
+
+    if menu == "Delete Students Score":
+        st.header("Delete Students Record")
+        code = st.selectbox("Class", getClassroom())
+    
+        if code:
+            clss = Class.query.filter_by(code=code).one()
+            students = clss.students
+            if students:
+                students.sort(key=lambda s: s.fullName)
+            stdlist = [std.fullName for std in students]
+            name = st.selectbox("Name", stdlist)
+            fullNameId = getStudentsIdandNames(code)
+            if name:
+                stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+            if stud:
+                subjectlist = [sub for sub in getclassSubjects(code) if sub in stud.subject_recoeded()]
+                subjectname = st.selectbox("Subject", subjectlist)
+        
+                subject = Subject.query.filter_by(student_id=stud.id, name=subjectname).one_or_none()
+                st.dataframe(pd.DataFrame([subject.view_dict()]))
+                if st.button("Delete") and subject:
+                    subject.delete()
+                    st.success("Record Deletes Successfully")
+
+    if menu == "Upload CSV Record":
+        csv_file = st.file_uploader("Upload CSV file", type="csv")
+        csv_text = st.text_area("Past your csv text here")
+        if csv_file:
+            data = pd.read_csv(csv_file)
+            st.dataframe(pd.DataFrame(data))
+
+        if st.button("Upload") and csv_text:
+            data = pd.read_csv(StringIO(csv_text))
+            st.dataframe(pd.DataFrame(data))
 
 
 
