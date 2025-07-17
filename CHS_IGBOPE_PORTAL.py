@@ -18,18 +18,26 @@ from models.portal.user import User
 if __name__ == "__main__":
     storage.create_table()
 @st.cache_data(ttl=5000)
-def getClassroom():
+def getClassrooms():
     return Class.all()
 
 @st.cache_data(ttl=5000)
 def getStudentsIdandNames(code):
-    clss = Class.query.filter_by(code=code).one()
+    clss = Class.query.filter_by(code=code).one_or_none()
     return clss.getStudentsIdandNames()
 
 @st.cache_data(ttl=5000)
 def getclassSubjects(code):
-     clss = Class.query.filter_by(code=code).one()
+     clss = Class.query.filter_by(code=code).one_or_none()
      return clss.sheetSubjects
+
+@st.cache_data(ttl=60000)
+def getClassroom(code):
+    return Class.query.filter_by(code=code).one_or_none()
+
+@st.cache_data(ttl=30000)
+def getStudentById(id):
+    return Student.query.filter_by(id=id).one_or_none()
 
 def viewStream():
     st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
@@ -45,7 +53,7 @@ def viewStream():
         arm = st.selectbox("Arms", ["A", "B", "C", "D", "E"])
         if st.button('Add class') and arm and room:
             clss = Class(className=room, arm=arm)
-            if Class.query.filter_by(code=clss.code).one_or_none():
+            if  getClassroom(clss.code):
                 st.warning(f"class {clss.code} exists")
                 return
             clss.save()
@@ -55,9 +63,9 @@ def viewStream():
         st.header("Add Students")
         st.info("Please ensure not two students with the same full name are the same arm")
         st.info("Please enter the form manually dont autofill")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss =  getClassroom(code)
         firstName = st.text_input("First Name", placeholder="First Name")
         middleName = st.text_input("Middle Name", placeholder="Middle Name")
         lastName = st.text_input("Last Name", placeholder="last Name")
@@ -82,13 +90,13 @@ def viewStream():
 
     if menu == "Upload score":
         st.header("Upload Scores")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
     
         if code:
             fullNameId = getStudentsIdandNames(code)
             name = st.selectbox("Name", fullNameId.keys())
             if name:
-                student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+                student = Student.query.filter_by(id=fullNameId[name]).one_or_none()
                 subjectlist = [sub for sub in getclassSubjects(code) if sub not in student.subject_recoeded()]
        
                 subjectname = st.selectbox("Subject", subjectlist)
@@ -118,9 +126,9 @@ def viewStream():
 
     if menu == "Generate sheet":
         st.header("Generate Sheet")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss = getClassroom(code)
         if st.button("Generate Sheet") and clss:
             clss.generateSheet()
             st.success(f"sheet with file name: {code}.xlsx generated successfully")
@@ -129,7 +137,7 @@ def viewStream():
     if menu == "View student scores":
         st.header("Student Scores")
 
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
         stdlist = []
     
         if code:
@@ -137,7 +145,7 @@ def viewStream():
             name = st.selectbox("Name", fullNameId.keys())
 
             if name:
-                student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+                student = Student.query.filter_by(id=fullNameId[name]).one_or_none()
             if student:
                 subjects = student.subjects_to_dict()
                 df = pd.DataFrame(subjects)
@@ -159,10 +167,10 @@ def viewStream():
     
     if menu == "View class":
         st.title("View Classes")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss =  getClassroom(code)
 
             df = pd.DataFrame(clss.students_to_dict())
 
@@ -172,9 +180,9 @@ def viewStream():
 
     if menu == "Download sheet":
         st.header("Download Sheet")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss =  getClassroom(code)
 
             try:
                 with open(f"{clss.code}.xlsx", "rb") as file:
@@ -191,7 +199,7 @@ def viewStream():
 
     if menu == "Delete student":
         st.header("Delete Students")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
     
         if code:
             fullNameId = getStudentsIdandNames(code)
@@ -208,7 +216,7 @@ def viewStream():
 
     if menu == "Edit Student":
         st.header("Edit Students")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
 
         if code:
             fullNameId = getStudentsIdandNames(code)
@@ -236,10 +244,10 @@ def viewStream():
 
     if menu == "Performance Analytics":
         st.header("📈 Performance Analytics")
-        code = st.selectbox("Select Class", getClassroom())
+        code = st.selectbox("Select Class", getClassrooms())
 
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss =  getClassroom(code)
             students = clss.students
 
             if not students:
@@ -289,7 +297,7 @@ def viewStream():
     if menu == "Change Student Class":
         st.header("Change Class or Promote Student")
         code = None
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
         stud = None
         if code:
             fullNameId = getStudentsIdandNames(code)
@@ -297,7 +305,7 @@ def viewStream():
 
             if name:
                 stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
-        class_to_code = st.selectbox("Class To", [room for room in getClassroom() if room != code])
+        class_to_code = st.selectbox("Class To", [room for room in getClassrooms() if room != code])
         if class_to_code:
             clss_to = Class.query.filter_by(code=class_to_code).one()
 
@@ -309,7 +317,7 @@ def viewStream():
 
     if menu == "Update score":
         st.header("Update Scores")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
     
         if code:
             fullNameId = getStudentsIdandNames(code)
@@ -344,10 +352,10 @@ def viewStream():
 
     if menu == "Subject Recorded":
         st.header("Subject Recorded")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss =  getClassroom(code)
             students = clss.students
             subjectlist = [sub for sub in getclassSubjects(code)]
             subjectname = st.selectbox("Subject", subjectlist)
@@ -369,10 +377,10 @@ def viewStream():
 
     if menu == "Delete Students Score":
         st.header("Delete Students Record")
-        code = st.selectbox("Class", getClassroom())
+        code = st.selectbox("Class", getClassrooms())
     
         if code:
-            clss = Class.query.filter_by(code=code).one()
+            clss =  getClassroom(code)
             students = clss.students
             if students:
                 students.sort(key=lambda s: s.fullName)
