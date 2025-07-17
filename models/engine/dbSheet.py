@@ -9,10 +9,14 @@ class Workbook:
  
     def __init__(self, *args, **kwargs):
         self.filePath = kwargs.pop("filePath", None)
+        self.defaultFile =  kwargs.pop("defaultFile", None)
     
     def open_session(self):
         if not self.__workbook:
-            self.__workbook = load_workbook(self.filePath)
+            try:
+                self.__workbook = load_workbook(self.filePath)
+            except FileNotFoundError:
+                self.__workbook = load_workbook(self.defaultFile, read_only=False)
 
        
     def getDbsheet(self, sheetName="Db"):
