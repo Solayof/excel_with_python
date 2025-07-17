@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from io import BytesIO, StringIO
+import numpy as np
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -40,6 +41,10 @@ def getStudentById(id):
     return Student.query.filter_by(id=id).one_or_none()
 
 def viewStream():
+    st.set_page_config(
+        page_title="CHS BROADSHEET",
+        layout="wide"
+    )
     st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
     st.title("Broadsheet Database")
     menu = st.sidebar.selectbox("Menu", [
@@ -106,12 +111,19 @@ def viewStream():
         secondTermScorce = st.number_input("Second Term Score", 0, 100)
 
         if st.button("upload score") and name and subjectname:
+
+            if secondTermScorce > 0  and secondTermScorce > 0 and ca == 0 and exam == 0:
+                average = (secondTermScorce + firstTermScore) / 2
+                ca = round(average / 3)
+                exam = round(average * 2 / 3)
+
             
             if firstTermScore == 0 and secondTermScorce == 0 and exam and ca:
                 firstTermScore = exam + ca
                 secondTermScorce = firstTermScore
             if firstTermScore == 0 and exam and ca and secondTermScorce:
                 firstTermScore = round((secondTermScorce + exam + ca) / 2)
+
             subject = Subject()
             subject.name = subjectname
             subject.student_id = student.id
@@ -128,7 +140,7 @@ def viewStream():
         st.header("Generate Sheet")
         code = st.selectbox("Class", getClassrooms())
         if code:
-            clss = getClassroom(code)
+            clss = Class.query.filter_by(code=code).one_or_none()
         if st.button("Generate Sheet") and clss:
             clss.generateSheet()
             st.success(f"sheet with file name: {code}.xlsx generated successfully")
@@ -170,7 +182,7 @@ def viewStream():
         code = st.selectbox("Class", getClassrooms())
     
         if code:
-            clss =  getClassroom(code)
+            clss =  Class.query.filter_by(code=code).one_or_none()
 
             df = pd.DataFrame(clss.students_to_dict())
 
@@ -182,7 +194,7 @@ def viewStream():
         st.header("Download Sheet")
         code = st.selectbox("Class", getClassrooms())
         if code:
-            clss =  getClassroom(code)
+            clss = Class.query.filter_by(code=code).one_or_none()
 
             try:
                 with open(f"{clss.code}.xlsx", "rb") as file:
@@ -248,7 +260,7 @@ def viewStream():
 
         if code:
             clss =  getClassroom(code)
-            students = clss.students
+            students = Student.query.filter_by(classroom_id=clss.id).all()
 
             if not students:
                 st.warning("No students found in this class.")
@@ -336,6 +348,10 @@ def viewStream():
                     secondTermScorce = st.number_input("Second Term Score", 0, 100, subject.secondTermScore)
                     
                     if st.button("Update"):
+                        if secondTermScorce > 0  and secondTermScorce > 0 and ca == 0 and exam == 0:
+                            average = (secondTermScorce + firstTermScore) / 2
+                            ca = round(average / 3)
+                            exam = round(average * 2 / 3)
                         if firstTermScore == 0 and secondTermScorce == 0:
                             firstTermScore = exam + ca
                             secondTermScorce = firstTermScore
@@ -353,10 +369,10 @@ def viewStream():
     if menu == "Subject Recorded":
         st.header("Subject Recorded")
         code = st.selectbox("Class", getClassrooms())
-    
+        subject = None
         if code:
             clss =  getClassroom(code)
-            students = clss.students
+            students = Student.query.filter_by(classroom_id=clss.id).all()
             subjectlist = [sub for sub in getclassSubjects(code)]
             subjectname = st.selectbox("Subject", subjectlist)
             studentlist = []
@@ -369,11 +385,23 @@ def viewStream():
                     obj["EXAM SCORE"] = subject.examScore
                     obj["FIRST TERM SCORE"] = subject.firstTermScore
                     obj["SECOND TERM SCORE"] = subject.secondTermScore
+                    obj["AVERAGE SCORE"] = (subject.CA + subject.examScore + subject.firstTermScore + subject.secondTermScore) / 3
                 else:
                     obj["FULLNAME"] = stud.fullName
                 studentlist.append(obj)
 
-            st.dataframe(pd.DataFrame(studentlist))
+            stdf = pd.DataFrame(studentlist)
+            st.dataframe(stdf)
+            if subject:
+                pldf = stdf[["FULLNAME", "AVERAGE SCORE"]]
+                fig = px.bar(pldf, x="FULLNAME", y="AVERAGE SCORE", 
+                    title=f"Class {code} {subjectname}- Average Performance",
+                    labels={"AVERAGE SCORE": "Avg Score"}, 
+                    color="AVERAGE SCORE", height=500)
+                st.plotly_chart(fig, use_container_width=True)
+           
+
+            
 
     if menu == "Delete Students Score":
         st.header("Delete Students Record")
@@ -381,7 +409,7 @@ def viewStream():
     
         if code:
             clss =  getClassroom(code)
-            students = clss.students
+            students = Student.query.filter_by(classroom_id=clss.id).all()
             if students:
                 students.sort(key=lambda s: s.fullName)
             stdlist = [std.fullName for std in students]
@@ -400,15 +428,57 @@ def viewStream():
                     st.success("Record Deletes Successfully")
 
     if menu == "Upload CSV Record":
-        csv_file = st.file_uploader("Upload CSV file", type="csv")
         csv_text = st.text_area("Past your csv text here")
-        if csv_file:
-            data = pd.read_csv(csv_file)
-            st.dataframe(pd.DataFrame(data))
-
+        csv_file = st.file_uploader("Upload CSV file", type="csv")
+        data = None
+        requiured_cols = {
+            "FULLNAME",
+            "CA",
+            "EXAM_SCORE",
+            "FIRST_TERM_SCORE",
+            "SECOND_TERM_SCORE"
+        }
         if st.button("Upload") and csv_text:
-            data = pd.read_csv(StringIO(csv_text))
-            st.dataframe(pd.DataFrame(data))
+            try:
+                data = pd.read_csv(StringIO(csv_text))
+            except Exception as e:
+                st.warning("eerror")
+        elif csv_file:
+            data = pd.read_csv(csv_file)
+        if isinstance(data, pd.DataFrame):
+            if not requiured_cols.issubset(data.columns):
+                st.error(f"CSV must have columns: {', '.join(requiured_cols)}")
+                return
+            name_list = data["FULLNAME"].unique()
+            print(name_list)
+            
+
+            
+            st.dataframe(pd.DataFrame([name_list]))
+            
+            code = st.selectbox("Class", getClassrooms())
+        
+            if code:
+                fullNameId = getStudentsIdandNames(code)
+                for name in name_list:
+                    if name in fullNameId.keys():
+                        student_data = data[data["FULLNAME"] == "SOLOMON"].iloc[0].to_dict()
+                        st.dataframe(pd.DataFrame([student_data]))
+                        subject = Subject()
+                        subject.student_id = fullNameId[name]
+
+                        if student_data.get("CA", 0) <= 30:
+                            subject.CA = student_data.get("CA", 0)
+                        if student_data.get("EXAM_SCORE", 0) <= 70:
+                            subject.examScore = student_data.get("EXAM_SCORE", 0)
+                        if student_data.get("FIRST_TERM_SCORE", 0):
+                            subject.firstTermScore = student_data.get("FIRST_TERM_SCORE", 0)
+                        if student_data.get("SECOND_TERM_SCORE", 0):
+                            subject.secondTermScore = student_data.get("SECOND_TERM_SCORE", 0)
+                        subject.save()
+                    else:
+                        st.warning(f"{name} is not a student of {code}")
+
 
     if menu == "Report Sheets":
         st.header("Report Sheet")
