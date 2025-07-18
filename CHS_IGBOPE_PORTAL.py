@@ -112,7 +112,7 @@ def viewStream():
 
         if st.button("upload score") and name and subjectname:
 
-            if secondTermScorce > 0  and secondTermScorce > 0 and ca == 0 and exam == 0:
+            if firstTermScore > 0  and secondTermScorce > 0 and ca == 0 and exam == 0:
                 average = (secondTermScorce + firstTermScore) / 2
                 ca = round(average / 3)
                 exam = round(average * 2 / 3)
@@ -274,6 +274,8 @@ def viewStream():
                         avg_score = total_score / len(scores)
                         performance_data.append({
                             "Name": student.fullName,
+                            "Total Score": total_score,
+                            "Number of Subject Recorded": len(scores),
                             "Average Score": avg_score,
                         })
 
@@ -348,7 +350,7 @@ def viewStream():
                     secondTermScorce = st.number_input("Second Term Score", 0, 100, subject.secondTermScore)
                     
                     if st.button("Update"):
-                        if secondTermScorce > 0  and secondTermScorce > 0 and ca == 0 and exam == 0:
+                        if firstTermScore > 0  and secondTermScorce > 0 and ca == 0 and exam == 0:
                             average = (secondTermScorce + firstTermScore) / 2
                             ca = round(average / 3)
                             exam = round(average * 2 / 3)
@@ -505,7 +507,9 @@ def viewStream():
                     obj = {}
                     obj["Subject"] = sub
                     subjectList.append(obj)
-                st.dataframe(pd.DataFrame(subjectList))
+                    df = pd.DataFrame(subjectList)
+                    df["TOTAL"] = df[["CA", "EXAM SCORE", "FIRST TERM SCORE", "SECOND TERM SCORE"]].sum(axis=1)
+                st.dataframe(df)
 
 
 
