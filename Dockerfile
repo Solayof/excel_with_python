@@ -1,18 +1,41 @@
 FROM python:3.12-slim
 
-# Set working directory
-WORKDIR .
+# Set environment variables to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy only the requirements first for better caching
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies for building packages like pandas
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        libffi-dev \
+        libpq-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        libjpeg-dev \
+        zlib1g-dev \
+        libblas-dev \
+        liblapack-dev \
+        libatlas-base-dev \
+        build-essential \
+        curl \
+        git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better cache
 COPY requirements.txt .
 
-# Install dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the app
+# Copy the app code
 COPY . .
 
-# Expose the port Streamlit will run on
+# Expose Streamlit port
 EXPOSE 8080
 
 # Run the Streamlit app
