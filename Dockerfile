@@ -1,12 +1,19 @@
-FROM ubuntu:latest AS build
-RUN apt-get update
-RUN apt-get install python3
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR .
+
+# Copy only the requirements first for better caching
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the app
 COPY . .
 
-RUN  pip install -r requirements.txt
-
-FROM python:3.12
-
+# Expose the port Streamlit will run on
 EXPOSE 8080
 
-ENTRYPOINT ["streamlit" "run" "CHS_IGBOPE_PORTAL.py" "--server.headless" "true"]
+# Run the Streamlit app
+ENTRYPOINT ["streamlit", "run", "CHS_IGBOPE_PORTAL.py", "--server.headless", "true", "--server.port", "8080", "--server.enableCORS", "false"]
