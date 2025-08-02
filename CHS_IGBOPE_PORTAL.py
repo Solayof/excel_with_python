@@ -393,7 +393,7 @@ def viewStream():
                 studentlist.append(obj)
 
             stdf = pd.DataFrame(studentlist)
-            st.dataframe(stdf)
+            st.dataframe(stdf.sort_values(by="AVERAGE SCORE", ascending=False))
             if subject:
                 pldf = stdf[["FULLNAME", "AVERAGE SCORE"]]
                 fig = px.bar(pldf, x="FULLNAME", y="AVERAGE SCORE", 
@@ -508,8 +508,8 @@ def viewStream():
                     obj["Subject"] = sub
                     subjectList.append(obj)
                     df = pd.DataFrame(subjectList)
-                    df["TOTAL"] = df[["CA", "EXAM SCORE", "FIRST TERM SCORE", "SECOND TERM SCORE"]].sum(axis=1)
-                st.dataframe(df)
+                df["TOTAL"] = df[["CA", "EXAM SCORE", "FIRST TERM SCORE", "SECOND TERM SCORE"]].sum(axis=1)
+                st.dataframe(df.sort_values(by="TOTAL", ascending=False))
 
 
 
