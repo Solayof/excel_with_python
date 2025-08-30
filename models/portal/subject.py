@@ -24,10 +24,10 @@ class Subject(BaseModel, Base):
     extend_existing = True
     name = Column(String(20), nullable=False)
     CA = Column(Integer(), default=0)
-    examScore = Column(Integer(), default=0)
-    firstTermScore = Column(Integer(), default=0)
-    secondTermScore = Column(Integer(), default=0)
+    examScore = Column(Integer(), default=0) 
     student_id = Column(String(36), ForeignKey("students._id"))
+    term = Column(String(15), nullable=False)
+    session = Column(String(9), nullable=False)
     student = relationship("Student",
         foreign_keys=[student_id],
         back_populates="subjects",
@@ -61,10 +61,6 @@ class Subject(BaseModel, Base):
 
         new_dict["CA"] = self.CA
         new_dict["Exam"] = self.examScore
-        new_dict["Second Term Score"] = self.secondTermScore
-        new_dict["First Term Score"] = self.firstTermScore
-        
-        
         return new_dict
     
 
@@ -73,4 +69,6 @@ class Subject(BaseModel, Base):
         objs = {}
         return objs
 
-
+    @property
+    def totalScore(self):
+        return self.CA + self.examScore
