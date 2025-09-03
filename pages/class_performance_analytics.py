@@ -41,6 +41,13 @@ def class_performance():
     if code:
         clss =  getClassroom(code)
         students = Student.query.filter_by(classroom_id=clss.id).all()
+        term_lists = term_list()
+        term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
+        sessions = session_list()
+        current_sess = current_session()
+        if current_sess not in sessions:
+            sessions.append(current_sess)
+        session = st.selectbox("Session", sessions, index=sessions.index(current_sess))
 
         if not students:
             st.warning("No students found in this class.")
@@ -48,31 +55,28 @@ def class_performance():
             # Collect student performance
             performance_data = []
             for student in students:
-                scores = student.subjects_to_dict()
+                scores = student.total_scores_per_subjects(session=session)
                 if scores:
-                    total_score = sum([sum(sub.values())/3 for sub in scores.values()])
-                    avg_score = total_score / len(scores)
                     performance_data.append({
                         "Name": student.fullName,
-                        "Total Score": total_score,
-                        "Number of Subject Recorded": len(scores),
-                        "Average Score": avg_score,
+                        "Total Score": sum(scores.values()),
+                        "Number of Subject Recorded": len(scores)
                     })
 
             if performance_data:
-                df_perf = pd.DataFrame(performance_data).sort_values(by="Average Score", ascending=False)
+                df_perf = pd.DataFrame(performance_data).sort_values(by="Total Score", ascending=False)
 
                 # Grade Distribution
                 
-                st.subheader("Average Scores Per Student")
-                df_perf["Grade"] = df_perf["Average Score"].apply(grade)
+                st.subheader("Total Score Per Student")
+                df_perf["Grade"] = df_perf["Total Score"].apply(grade)
                 st.dataframe(df_perf)
 
-                # Bar chart for average scores
-                fig = px.bar(df_perf, x="Name", y="Average Score", 
+                # Bar chart for Total Score
+                fig = px.bar(df_perf, x="Name", y="Total Score", 
                             title=f"Class {code} - Average Performance",
-                            labels={"Average Score": "Avg Score"}, 
-                            color="Average Score", height=500)
+                            labels={"Total Score": "Avg Score"}, 
+                            color="Total Score", height=500)
                 st.plotly_chart(fig, use_container_width=True)
 
                 
