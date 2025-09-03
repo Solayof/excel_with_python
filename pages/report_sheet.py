@@ -41,26 +41,26 @@ def report_sheet():
     if code:
         fullNameId = getStudentsIdandNames(code)
         name = st.selectbox("Name", fullNameId.keys())
+        term_lists = term_list()
+        term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
+        sessions = session_list()
+        current_sess = current_session()
+        if current_sess not in sessions:
+            sessions.append(current_sess)
+        session = st.selectbox("Session", sessions, index=sessions.index(current_sess))
         if name:
             stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
         if stud:
-            subjects = stud.subjects
-            subjectList = []
-            for sub in subjects:
-                obj = {}
-                obj["Subject"] = sub.name
-                obj["CA"] = sub.CA
-                obj["EXAM SCORE"] = sub.examScore
-                obj["FIRST TERM SCORE"] = sub.firstTermScore
-                obj["SECOND TERM SCORE"] = sub.secondTermScore
-                subjectList.append(obj)
-            subjectlist = [sub for sub in getclassSubjects(code) if sub not in stud.subject_recoeded()]
+            subs_list = []
+            subjectlist = [sub for sub in getclassSubjects(code) if sub in stud.subject_recorded(term=term, session=session)]
             for sub in subjectlist:
                 obj = {}
-                obj["Subject"] = sub
-                subjectList.append(obj)
-                df = pd.DataFrame(subjectList)
-            df["TOTAL"] = df[["CA", "EXAM SCORE", "FIRST TERM SCORE", "SECOND TERM SCORE"]].sum(axis=1)
+                obj["SUBJECT"] = sub
+                sub_dict = stud.records_for_subject(subject=sub, term=term, session=session)
+                obj.update(sub_dict)
+                obj["TOTAL"] = sum(sub_dict.values())
+                subs_list.append(obj)
+                df = pd.DataFrame(subs_list)
             st.dataframe(df.sort_values(by="TOTAL", ascending=False))
 
 report_sheet()
