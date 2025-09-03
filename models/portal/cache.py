@@ -1,5 +1,7 @@
 import streamlit as st
 
+from models.portal.Class import Class
+
 @st.cache_data(ttl=30000)
 def current_term():
     import datetime
@@ -23,3 +25,9 @@ def current_session():
     if mth < 9:
         yr = yr - 1
     return f"20{yr}-20{yr + 1}"
+
+
+@st.cache_data(ttl=5000)
+def getclassSubjects(code):
+     clss = Class.query.filter_by(code=code).one_or_none()
+     return clss.sheetSubjects
