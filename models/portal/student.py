@@ -3,7 +3,7 @@
 """
 from sqlalchemy import Column, ForeignKey, JSON, String
 from sqlalchemy.orm import relationship
-from models.portal.cache import current_session, current_term
+from models.portal.cache import current_session, current_term, getclassSubjects
 from models.portal.admission import Admission
 from models.portal.subject import Subject
 
@@ -99,29 +99,54 @@ class Student(Admission):
         subjects = Subject.query.with_entities(Subject.session).filter_by(student_id=self.id, term=term).distinct().all()
         return [sub[0] for sub in subjects if sub[0]]
     
-    def subjects_scores(self, term=None, session=None):
-        if not session:
-            session = current_session()
-        if term:     
-            subjects = self.term_subject(term=term, session=session)
-        else:
-            subjects = self.subjects
-
+    def termly_subjects_scores(self, term=None, session=None):
+        subjects = self.term_subject(term=term, session=session)
         return [sub.view_dict() for sub in subjects]
     
     def overall_subjects_scores(self):
         subjects_dict = {}
-        for sub in self.classroom.sheetSubjects:
+        for sub in getclassSubjects(self.classroom.code):
             sub_dict = {}
             term_subject = Subject.query.filter_by(
                 student_id=self.id, name=sub, term=current_term()).one_or_none()
             if term_subject:
                 sub_dict = term_subject.view_dict()
+                sub_dict.update(self.other_term_subject_scores(sub))
             
-            subjects = Subject.query.filter_by(student_id=self.id, name=sub).all()
-            if subjects:
-                    sub_dict.update({s.term: s.totalScore for s in subjects if s.term != current_term()})
+            
             subjects_dict.update({sub: sub_dict})
-        return subjects_dict  
+        return subjects_dict
 
-            
+    def other_term_subject_scores(self, subject, term=None, session=None):
+        sub_dict = {}
+        if not term:
+            term = current_term()
+
+        if not session:
+            session = current_session()
+        subjects = Subject.query.filter_by(student_id=self.id, name=subject, session=session).all()
+        if subjects:
+            sub_dict.update({s.term: s.totalScore for s in subjects if s.term != term})
+
+        return sub_dict
+    
+    def records_for_subject(self, subject, term=None, session=None):
+        if not term:
+            term = current_term()
+
+        if not session:
+            session = current_session()
+        sub_dict = {}
+        sub = Subject.query.filter_by(session=session, term=term, student_id=self.id, name=subject).one_or_none()
+        if sub:
+            sub_dict.update(sub.view_dict())
+        sub_dict.update(self.other_term_subject_scores(subject=subject, term=term))
+
+        return sub_dict
+    
+    def total_scores_per_subjects(self, session=None):
+        subs = {}
+        for sub in self.subject_recorded(session=session):
+            sub_dict = self.records_for_subject(subject=sub, session=session)
+            subs[sub] = sum(sub_dict.values())
+        return subs
