@@ -18,12 +18,14 @@ def getClassrooms():
 @st.cache_data(ttl=5000)
 def getStudentsIdandNames(code):
     clss = Class.query.filter_by(code=code).one_or_none()
-    return clss.getStudentsIdandNames()
+    if clss:
+        return clss.getStudentsIdandNames()
 
 @st.cache_data(ttl=5000)
 def getclassSubjects(code):
      clss = Class.query.filter_by(code=code).one_or_none()
-     return clss.sheetSubjects
+     if clss:
+        return clss.sheetSubjects
 
 @st.cache_data(ttl=60000)
 def getClassroom(code):

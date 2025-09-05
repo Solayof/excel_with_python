@@ -11,6 +11,7 @@ from models.portal.Class import Class
 
 from models.portal.student import Student
 from models.portal.subject import Subject
+from models.portal.department import Department
 
 from models.portal.user import User
 
@@ -28,10 +29,11 @@ st.title("Edit Students")
 
 def edit_student():
     code = st.selectbox("Class", getClassrooms())
-
+    name = None
     if code:
         fullNameId = getStudentsIdandNames(code)
-        name = st.selectbox("Name", fullNameId.keys())
+        if fullNameId:
+            name = st.selectbox("Name", fullNameId.keys())
 
     if name:
         stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()

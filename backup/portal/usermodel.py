@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-"""user models"""
+"""user backup"""
 from datetime import date, datetime
 from sqlalchemy import Column, DateTime, Integer, String
 from uuid import uuid4
-import models
-from models.baseModel import BaseModel
+import backup
+from backup.baseModel import BaseModel
 
 
 
@@ -52,7 +52,7 @@ class UserModel(BaseModel):
         Returns:
             _type_: string
         """        
-        return f"{self.firstName} {self.middleName} {self.lastName}"
+        return f"{self.lastName} {self.firstName} {self.middleName if self.middleName else ''}"
     
     def __repr__(self):
         """string representation

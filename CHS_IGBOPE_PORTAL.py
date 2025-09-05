@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from models import storage
+import backup.portal.student
 
 
 from models.portal.admission import Admission
@@ -12,33 +13,15 @@ from models.portal.Class import Class
 
 from models.portal.student import Student
 from models.portal.subject import Subject
+from models.portal.department import Department
+from models.portal.teacher import Teacher
 
 from models.portal.user import User
 
 
 if __name__ == "__main__":
     storage.create_table()
-@st.cache_data(ttl=5000)
-def getClassrooms():
-    return Class.all()
 
-@st.cache_data(ttl=5000)
-def getStudentsIdandNames(code):
-    clss = Class.query.filter_by(code=code).one_or_none()
-    return clss.getStudentsIdandNames()
-
-@st.cache_data(ttl=5000)
-def getclassSubjects(code):
-     clss = Class.query.filter_by(code=code).one_or_none()
-     return clss.sheetSubjects
-
-@st.cache_data(ttl=60000)
-def getClassroom(code):
-    return Class.query.filter_by(code=code).one_or_none()
-
-@st.cache_data(ttl=30000)
-def getStudentById(id):
-    return Student.query.filter_by(id=id).one_or_none()
 
 def viewStream():
     st.set_page_config(
@@ -67,5 +50,5 @@ def viewStream():
     if delete_stud.button("Delete sudent"):
         st.switch_page("pages/delete_student.py")
 
-
+    print(User.query.all())
 viewStream()

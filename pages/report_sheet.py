@@ -15,6 +15,7 @@ from models.cache import (getClassrooms,
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
+from models.portal.department import Department
 
 from models.portal.student import Student
 from models.portal.subject import Subject
@@ -39,8 +40,11 @@ def report_sheet():
     code = st.selectbox("Class", getClassrooms())
 
     if code:
+        stud = None
+        name = None
         fullNameId = getStudentsIdandNames(code)
-        name = st.selectbox("Name", fullNameId.keys())
+        if fullNameId:
+            name = st.selectbox("Name", fullNameId.keys())
         term_lists = term_list()
         term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
         sessions = session_list()

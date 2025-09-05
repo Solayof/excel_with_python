@@ -15,6 +15,7 @@ from models.cache import (getClassrooms,
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
+from models.portal.department import Department
 
 from models.portal.student import Student
 from models.portal.subject import Subject
@@ -39,13 +40,15 @@ def edit_subject():
     subjectname = None
     name = None
     stud = None
+    term = None
     if code:
         fullNameId = getStudentsIdandNames(code)
-        name = st.selectbox("Name", fullNameId.keys())
+        if fullNameId:
+            name = st.selectbox("Name", fullNameId.keys())
         if name:
             stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
             term_lists = term_list()
-        term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
+            term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
         if stud and term:
             subjectlist = [sub for sub in getclassSubjects(code) if sub in stud.subject_recorded(term=term)]
             subjectname = st.selectbox("Subject", subjectlist)

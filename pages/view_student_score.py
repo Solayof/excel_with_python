@@ -15,6 +15,7 @@ from models.cache import (getClassrooms,
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
+from models.portal.department import Department
 
 from models.portal.student import Student
 from models.portal.subject import Subject

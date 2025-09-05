@@ -3,7 +3,7 @@
 """
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
-from models.portal.user import User
+from backup.portal.user import User
 
 
 class Admission(User):
@@ -16,9 +16,7 @@ class Admission(User):
     extend_existing = True
     _id = Column(String(36), ForeignKey('users.id'), primary_key=True)
     admission_no = Column(String(5), unique=True, nullable=False)
-    __mapper_args__ = {
-        'polymorphic_identity': 'admission',
-    }
+    
     
     def to_dict(self):
         """dictionary representation of class instance

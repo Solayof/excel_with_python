@@ -15,6 +15,7 @@ from models.cache import (getClassrooms,
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
+from models.portal.department import Department
 
 from models.portal.student import Student
 from models.portal.subject import Subject
@@ -38,10 +39,13 @@ def record_for_subject():
     st.header("Subject Recorded")
     code = st.selectbox("Class", getClassrooms())
     subject = None
+    students = []
+    subjectlist = []
     if code:
         clss =  getClassroom(code)
-        students = Student.query.filter_by(classroom_id=clss.id).all()
-        subjectlist = [sub for sub in getclassSubjects(code)]
+        if clss:
+            students = Student.query.filter_by(classroom_id=clss.id).all()
+            subjectlist = [sub for sub in getclassSubjects(code)]
         term_lists = term_list()
         term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
         sessions = session_list()
@@ -60,9 +64,9 @@ def record_for_subject():
 
             studentlist.append(obj)
 
-        stdf = pd.DataFrame(studentlist)
-        st.dataframe(stdf.sort_values(by="TOTAL", ascending=False))
-        if subject:
+        if studentlist:
+            stdf = pd.DataFrame(studentlist)
+            st.dataframe(stdf.sort_values(by="TOTAL", ascending=False))
             pldf = stdf[["FULLNAME", "TOTAL"]]
             fig = px.bar(pldf, x="FULLNAME", y="TOTAL", 
                 title=f"Class {code} {subjectname}- Average Performance",

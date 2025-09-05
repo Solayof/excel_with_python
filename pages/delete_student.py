@@ -8,6 +8,7 @@ import plotly.express as px
 from models.cache import getClassrooms, getClassroom, getStudentById, getStudentsIdandNames, getclassSubjects
 from models.portal.admission import Admission
 from models.portal.Class import Class
+from models.portal.department import Department
 
 from models.portal.student import Student
 from models.portal.subject import Subject
@@ -29,11 +30,13 @@ st.title("Delete Students")
 
 def delete_student():
     code = st.selectbox("Class", getClassrooms())
-
+    name = None
+    student = None
     if code:
         fullNameId = getStudentsIdandNames(code)
-        st.info("Select a student to delete")
-        name = st.selectbox("Name", fullNameId.keys())
+        if fullNameId:
+            st.info("Select a student to delete")
+            name = st.selectbox("Name", fullNameId.keys())
 
         if name:
             student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
