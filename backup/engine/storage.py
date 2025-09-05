@@ -3,7 +3,7 @@
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from models.base import Base
+from backup.base import Base
 
 
 class Dbstorage():

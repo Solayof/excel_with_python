@@ -5,7 +5,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from models import storage
-import backup.portal.student
+from backup.student_readers import getAllStudents
+
 
 
 from models.portal.admission import Admission
@@ -50,5 +51,11 @@ def viewStream():
     if delete_stud.button("Delete sudent"):
         st.switch_page("pages/delete_student.py")
 
-    print(User.query.all())
+    print(Student.query.count())
+    for stud in getAllStudents():
+        with st.expander(f"{stud.fullName} - {stud.admission_no} - {stud.classroom.code if stud.classroom else 'No class assigned'}"):
+            st.write(f"**Name:** {stud.fullName}")
+            st.write(f"**Admission Number:** {stud.admission_no}")
+            st.write(f"**Class:** {stud.classroom.code if stud.classroom else 'No class assigned'}")
+            st.write("**Subjects**")
 viewStream()
