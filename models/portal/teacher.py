@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """teacher class
 """
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, Date, ForeignKey, String
 from sqlalchemy.orm import relationship
 from models.portal.user import User
 from models.portal.Class import Class
@@ -20,8 +20,8 @@ class Teacher(User):
     file_no = Column(String(16))
     grade_level = Column(String(4))
     previous_school = Column(String(64))
-    date_transfer = Column(DateTime)
-    last_promote_date = Column(DateTime)
+    date_transfer = Column(Date)
+    last_promote_date = Column(Date)
     department_id = Column(String(36), ForeignKey("departments.id", ondelete="SET NULL"))
     department = relationship(
         "Department",
