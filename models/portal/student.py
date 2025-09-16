@@ -42,13 +42,7 @@ class Student(Admission):
         back_populates="student",
         uselist=True)
     
-    department_id = Column(String(36), ForeignKey("departments.id", ondelete="SET NULL"))
-    department = relationship(
-        "Department",
-        foreign_keys=[department_id],
-        back_populates="students",
-        uselist=False
-    )
+    
     
 
     def to_dict(self):
