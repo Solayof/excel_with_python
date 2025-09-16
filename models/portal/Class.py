@@ -32,10 +32,18 @@ class Class(BaseModel, Base):
         back_populates="classroom",
         uselist=True
         )
+    department_id = Column(String(36), ForeignKey("departments.id", ondelete="SET NULL"))
+    department = relationship(
+        "Department",
+        foreign_keys=[department_id],
+        back_populates="classes",
+        uselist=False
+    )
 
     def __init__(self, *args, **kwargs):
         """initializing class
-        """        
+        """
+        className = None     
         if kwargs:
             className = kwargs.pop("className", None)
             arm = kwargs.pop("arm", None)
