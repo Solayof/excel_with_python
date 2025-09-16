@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 """user model
 """
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from hashlib import sha256
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, Date, String
 from models.base import Base
 from models.portal.usermodel import UserModel
 import models
@@ -23,11 +23,11 @@ class User(UserModel, Base):
     firstName = Column(String(36))
     middleName = Column(String(36))
     lastName = Column(String(36))
-    email = Column(String(36), unique=True)
+    email = Column(String(128), unique=True)
     gender = Column(String(6))
     address = Column(String(128))
     phone_number = Column(String(16))
-    dob = Column(DateTime, default=datetime.now(timezone.utc))
+    dob = Column(Date, default=date.today())
     __password = Column(String(64))
     
     @property
@@ -68,7 +68,7 @@ class User(UserModel, Base):
         Returns:
             bool: return True if admin otherwise False
         """        
-        teac = models.portal.Admin.query.filter_by(teacher_id=self.id).one_or_none()
+        teac = models.portal.admin.Admin.query.filter_by(teacher_id=self.id).one_or_none()
         if teac:
             return True
         else:
