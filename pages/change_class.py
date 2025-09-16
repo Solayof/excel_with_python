@@ -14,6 +14,14 @@ from models.portal.student import Student
 from models.portal.subject import Subject
 
 from models.portal.user import User
+from pages import session_auth
+
+
+current_user = session_auth.current_user()
+if not current_user:
+    st.switch_page("CHS_IGBOPE_PORTAL.py")
+if current_user.isAdmin() is False:
+    st.switch_page("CHS_IGBOPE_PORTAL.py")
 
 st.set_page_config(
     page_title="Create Student",
@@ -26,7 +34,6 @@ st.set_page_config(
     }
 )
 st.title("Change Class or Promote Student")
-
 def change_class():
     code = None
     code = st.selectbox("Class", getClassrooms())
