@@ -35,7 +35,8 @@ class Class(BaseModel, Base):
 
     def __init__(self, *args, **kwargs):
         """initializing class
-        """        
+        """
+        className = None       
         if kwargs:
             className = kwargs.pop("className", None)
             arm = kwargs.pop("arm", None)
