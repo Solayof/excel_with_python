@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import (getClassrooms,
+from models.cache import (departs_name_with_id, getClassrooms,
                           getClassroom,
                           getStudentById,
                           getStudentsIdandNames,
@@ -21,6 +21,13 @@ from models.portal.student import Student
 from models.portal.subject import Subject
 
 from models.portal.user import User
+from pages import session_auth
+
+current_user = session_auth.current_user()
+if not current_user:
+    st.switch_page("CHS_IGBOPE_PORTAL.py")
+if current_user.isAdmin() is False:
+    st.switch_page("CHS_IGBOPE_PORTAL.py")
 
 st.set_page_config(
     page_title="Record Student Subject Score",
@@ -33,11 +40,14 @@ st.set_page_config(
     }
 )
 st.title("Record Student Subject Score")
-def create_subject():    
+def create_subject():
     st.header("Upload Scores")
+
     code = st.selectbox("Class", getClassrooms())
     subjectname = None
     name = None
+    departs_dict = departs_name_with_id()
+    depart_id = departs_dict.get(name, None) if name else None
     if code:
         fullNameId = getStudentsIdandNames(code)
         if fullNameId:
@@ -71,6 +81,7 @@ def create_subject():
         subject.examScore = exam
         subject.term = term
         subject.session = current_session()
+        subject.department_id = depart_id
         if not subject.student_id:
             st.error("score can not be save, no student attached")
         subject.save()
