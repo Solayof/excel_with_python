@@ -32,7 +32,7 @@ class Subject(BaseModel, Base):
     department = relationship(
         "Department",
         foreign_keys=[department_id],
-        back_populates="subjects",
+        back_populates="subjects_recorded",
         uselist=False
     )
     student = relationship("Student",
