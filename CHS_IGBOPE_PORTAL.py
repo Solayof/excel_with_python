@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 from models import storage
 from backup.student_readers import getAllStudents
+from backup.getclass import get_classes
 
 
 
@@ -16,8 +17,13 @@ from models.portal.student import Student
 from models.portal.subject import Subject
 from models.portal.department import Department
 from models.portal.teacher import Teacher
-
 from models.portal.user import User
+from models.portal.session import Session
+from models.portal.admin import Admin
+from pages import session_auth
+
+from utils.login import login
+from utils.logout import logout
 
 
 if __name__ == "__main__":
@@ -31,31 +37,45 @@ def viewStream():
     )
     st.title("COMPREHENSIVE HIGH SCHOOL IGBOPE")
     st.title("Broadsheet Database")
-    create_stud, create_sub, create_cls, change_cls, edit_stud, edit_sub, view_stud, delete_stud, delete_sub=st.columns(9)
-    if create_cls.button("Add class"):
-        st.switch_page("pages/create_class.py")
-    if create_stud.button("Add student"):
-        st.switch_page("pages/create_student.py")
-    if edit_stud.button("Edit Student"):
-        st.switch_page("pages/edit_student.py")
-    if change_cls.button("Change Student Class"):
-        st.switch_page("pages/change_class.py")
-    if create_sub.button("Upload score"):
-        st.switch_page("pages/create_subject")
-    if edit_sub.button("Update score"):
-        st.switch_page("pages/edit_subject.py")
-    if view_stud.button("View student scores"):
-        st.switch_page("pages/view_student_score.py")
-    if delete_sub.button("Delete Students Score"):
-        st.switch_page("pages/delete_subject.py")
-    if delete_stud.button("Delete sudent"):
-        st.switch_page("pages/delete_student.py")
-
-    print(Student.query.count())
-    for stud in getAllStudents():
-        with st.expander(f"{stud.fullName} - {stud.admission_no} - {stud.classroom.code if stud.classroom else 'No class assigned'}"):
-            st.write(f"**Name:** {stud.fullName}")
-            st.write(f"**Admission Number:** {stud.admission_no}")
-            st.write(f"**Class:** {stud.classroom.code if stud.classroom else 'No class assigned'}")
-            st.write("**Subjects**")
+    current_user = session_auth.current_user()
+    
+    if not current_user:
+        if login():
+            st.rerun()
+    else:
+        st.success(f"Welcome {current_user.fullName}")
+        if st.button("Logout"):
+            logout()
+            st.rerun()
+    
+ 
 viewStream()
+
+# depart = Department()
+# depart.name = "GENERAL"
+# depart.save()
+
+
+# for clss in get_classes():
+#     new_class = Class()
+#     new_class.arm = clss.arm
+#     new_class.id = clss.id
+#     new_class.className = clss.className
+#     new_class.code = clss.code
+#     new_class.session = clss.session
+#     new_class.department_id = depart.id
+#     new_class.save()
+
+# for stud in getAllStudents():
+#     student = Student()
+#     student.firstName = stud.firstName
+#     student.lastName = stud.lastName
+#     student.middleName = stud.middleName
+#     student.admission_no = stud.admission_no
+#     student.classroom_id = stud.classroom_id
+#     student.gender = stud.gender
+#     student.username = stud.admission_no
+#     student.email = stud.admission_no
+#     student.password = stud.admission_no
+#     student.save()
+ 
