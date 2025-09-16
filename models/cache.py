@@ -6,6 +6,7 @@ import streamlit as st
 from models.portal.admission import Admission
 from models.portal.Class import Class
 
+from models.portal.department import Department
 from models.portal.student import Student
 from models.portal.subject import Subject
 
@@ -47,3 +48,9 @@ def grade(score):
                     elif score >= 50: return "C"
                     elif score >= 40: return "D"
                     else: return "F"
+
+st.cache_data(ttl=30000)
+def departs_name_with_id():
+    departs = Department.query.all()
+    depart_dict = {d.name: d.id for d in departs}   
+    return depart_dict
