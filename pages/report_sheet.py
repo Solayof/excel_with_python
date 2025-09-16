@@ -21,6 +21,14 @@ from models.portal.student import Student
 from models.portal.subject import Subject
 
 from models.portal.user import User
+from pages import session_auth
+
+current_user = session_auth.current_user()
+if not current_user:
+    st.switch_page("CHS_IGBOPE_PORTAL.py")
+# if current_user.isAdmin() is False:
+#     st.switch_page("CHS_IGBOPE_PORTAL.py")
+
 
 st.set_page_config(
     page_title="Record Student Subject Score",
@@ -40,11 +48,12 @@ def report_sheet():
     code = st.selectbox("Class", getClassrooms())
 
     if code:
-        stud = None
+        stud = Student.get(current_user.id)
         name = None
-        fullNameId = getStudentsIdandNames(code)
-        if fullNameId:
-            name = st.selectbox("Name", fullNameId.keys())
+        if not stud:
+            fullNameId = getStudentsIdandNames(code)
+            if fullNameId:
+                name = st.selectbox("Name", fullNameId.keys())
         term_lists = term_list()
         term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
         sessions = session_list()
@@ -64,7 +73,8 @@ def report_sheet():
                 obj.update(sub_dict)
                 obj["TOTAL"] = sum(sub_dict.values())
                 subs_list.append(obj)
+            if subs_list:
                 df = pd.DataFrame(subs_list)
-            st.dataframe(df.sort_values(by="TOTAL", ascending=False))
+                st.dataframe(df.sort_values(by="TOTAL", ascending=False))
 
 report_sheet()
