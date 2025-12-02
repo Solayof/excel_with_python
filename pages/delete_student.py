@@ -51,6 +51,6 @@ def delete_student():
         if st.button(f"Delete {name}") and name and student:
             student.delete()
             st.success(f"{student.fullName} deleted successfully")
-            st.dataframe(pd.DataFrame([student.to_dict()]))
+            st.table(pd.DataFrame([student.to_dict()]))
 
 delete_student()    

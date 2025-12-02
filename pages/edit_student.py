@@ -62,7 +62,7 @@ def edit_student():
                 stud.password = stud.lastName
 
             stud.save()
-            st.dataframe(pd.DataFrame([stud.to_dict()]))
+            st.table(pd.DataFrame([stud.to_dict()]))
             st.success("Updated successfuly")
 
 edit_student()

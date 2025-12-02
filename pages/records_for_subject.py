@@ -74,7 +74,7 @@ def record_for_subject():
 
         if studentlist:
             stdf = pd.DataFrame(studentlist)
-            st.dataframe(stdf.sort_values(by="TOTAL", ascending=False))
+            st.table(stdf.sort_values(by="TOTAL", ascending=False))
             pldf = stdf[["FULLNAME", "TOTAL"]]
             fig = px.bar(pldf, x="FULLNAME", y="TOTAL", 
                 title=f"Class {code} {subjectname}- Average Performance",

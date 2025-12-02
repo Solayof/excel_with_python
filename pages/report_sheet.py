@@ -75,6 +75,6 @@ def report_sheet():
                 subs_list.append(obj)
             if subs_list:
                 df = pd.DataFrame(subs_list)
-                st.dataframe(df.sort_values(by="TOTAL", ascending=False))
+                st.table(df.sort_values(by="TOTAL", ascending=False))
 
 report_sheet()

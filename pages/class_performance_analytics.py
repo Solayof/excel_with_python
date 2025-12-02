@@ -79,7 +79,7 @@ def class_performance():
                 
                 st.subheader("Total Score Per Student")
                 df_perf["Grade"] = df_perf["Total Score"].apply(grade)
-                st.dataframe(df_perf)
+                st.table(df_perf)
 
                 # Bar chart for Total Score
                 fig = px.bar(df_perf, x="Name", y="Total Score", 
