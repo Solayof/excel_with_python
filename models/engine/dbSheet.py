@@ -43,7 +43,7 @@ class Workbook:
         sheet = self.getDbsheet(sheetName=sheetName)
         sheet[cell] = value
 
-    def readCell(self, cell, sheetName="Db"):
+    def readCell(self, cell, sheetName="1ST TERM Db"):
         sheet = self.getDbsheet(sheetName=sheetName)
         return sheet[cell].value
     
@@ -56,6 +56,21 @@ class Workbook:
 
         if db[cell].value == subject:
             return cell
+    def get_jss_subject_cell(self, sheetName):
+        sub_cells = {}
+        scell = 'CK4'
+        db = self.getDbsheet(sheetName=sheetName)
+        while db[scell].value:
+            cell = "K2"
+            while db[cell].value and db[cell].value != f'={db[scell].coordinate}':
+                row, col = coordinate_to_tuple(cell)
+                cell = f"{get_column_letter(col + 2)}{row}"
+        
+            if db[cell].value == f'={db[scell].coordinate}':
+                sub_cells[db[scell].value] = cell
+            srow, scol = coordinate_to_tuple(cell)
+            scell = f"{get_column_letter(scol)}{srow + 1}"
+        return sub_cells
 
 
     def close(self):

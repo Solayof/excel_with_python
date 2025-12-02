@@ -94,27 +94,34 @@ class Class(BaseModel, Base):
 
         return worksheet
     
-    def generateSheet(self, sheetName):
+    def generateSheet(self, term=None, session=None):
         students = self.students
         students.sort(key=lambda s: s.fullName)
+        sheetName = None
+        if term == 'First Term':
+            sheetName = '1ST TERM Db'
+        elif term == "Second Term":
+            sheetName = "2ND TERM Db "
+        else:
+            sheetName = '3RD TERM Db'
         worksheet = self.getSheet()
         worksheet.open_session()
         sheet = worksheet.getDbsheet(sheetName=sheetName)
 
         stdcell = "b4"
         stdrow, stdcol = coordinate_to_tuple(stdcell)
+        subject_cell = worksheet.get_jss_subject_cell(sheetName=sheetName)
         for student in students:
             sheet.cell(stdrow, stdcol, student.fullName)
-            subjects = student.subjects
+            subjects = student.term_subject(term=term, session=session)
     
             sheet.cell(stdrow, stdcol + 1, student.admission_no)
 
             
             sheet.cell(stdrow, stdcol + 2, student.gender)
-            
             sheet.cell(stdrow, stdcol + 3, student.classroom.className)
             for subject in subjects:
-                subCell = worksheet.getSubjectCell(subject=subject.name)
+                subCell = subject_cell[subject.name]
                 _, subcol = coordinate_to_tuple(subCell)
 
                 sheet.cell(stdrow, subcol - 1, subject.CA)
@@ -126,7 +133,28 @@ class Class(BaseModel, Base):
 
     @property
     def sheetSubjects(self):
-        return self.getSheet().dbSubjects()
+        general = ["General Mathematics", "English Language", "Basic science", "Basic Technology",
+                        "Social Studies", "Civic Education",
+                        "C.R.S", "Islamic Studies", "Business Studies",
+                        "P.H.E", "Agricultural Science",
+                        "Computer Studies", "Yoruba"]
+        science = ["General Mathematics", "English Language", "Biology", "Chemistry", "Physics",
+                      "Agricultural Science", "Geography", "Economics", "Civic Education",
+                      "Yoruba"]
+        commerce = ["General Mathematics", "English Language", "Biology",
+                      "Agricultural Science", "Geography", "Civic Education", "Economics", "Commerce",
+                      "Yoruba"]
+        art = ["General Mathematics", "English Language", "Biology",
+                      "Agricultural Science", "Economics", "Commerce", "Civic Education", "Financial Accounting",
+                      "Yoruba"]
+        if self.department.name.lower() == 'general':
+            return general
+        elif self.department.name.lower() == 'science':
+            return science
+        elif self.department.name.lower() == 'art':
+            return art
+        else:
+            return commerce
     
 
     def students_to_dict(self):
