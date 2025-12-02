@@ -86,5 +86,8 @@ def create_subject():
             st.error("score can not be save, no student attached")
         subject.save()
         st.success("score save successfully")
-
+# try:
+#     create_subject()
+# except Exception as e:
+#     st.error(f"An error occurred: {e}")
 create_subject()

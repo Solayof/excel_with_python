@@ -89,17 +89,17 @@ class Class(BaseModel, Base):
         return new_dict
     
     def getSheet(self):
-        worksheet = Workbook(filePath=f"{self.code}.xlsx", defaultFile=f"{self.className[:3]}.xlsx")
+        worksheet = Workbook(filePath=f"{self.code}.xlsm", defaultFile=f"{self.className[:3]}.xlsm")
         worksheet.open_session()
 
         return worksheet
     
-    def generateSheet(self):
+    def generateSheet(self, sheetName):
         students = self.students
         students.sort(key=lambda s: s.fullName)
         worksheet = self.getSheet()
         worksheet.open_session()
-        sheet = worksheet.getDbsheet()
+        sheet = worksheet.getDbsheet(sheetName=sheetName)
 
         stdcell = "b4"
         stdrow, stdcol = coordinate_to_tuple(stdcell)
@@ -117,14 +117,10 @@ class Class(BaseModel, Base):
                 subCell = worksheet.getSubjectCell(subject=subject.name)
                 _, subcol = coordinate_to_tuple(subCell)
 
-                sheet.cell(stdrow, subcol, subject.CA)
+                sheet.cell(stdrow, subcol - 1, subject.CA)
 
-                sheet.cell(stdrow, subcol + 1, subject.examScore)
-
-                sheet.cell(stdrow, subcol + 3, subject.secondTermScore)
-
-                sheet.cell(stdrow, subcol + 4, subject.firstTermScore)
-                
+                sheet.cell(stdrow, subcol, subject.examScore)
+               
             stdrow = stdrow + 1
         worksheet.saveWorkbook(self.code)
 
