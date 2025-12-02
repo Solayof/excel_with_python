@@ -12,7 +12,7 @@ from models.portal.user import User
 class SessionDbAuth:
     def __init__(self):
         try:
-            self.session_duration = int(getenv("SESSION_DURATION", "360"))
+            self.session_duration = int(getenv("SESSION_DURATION", "84006"))
         except Exception:
             self.session_duration = 0
     
