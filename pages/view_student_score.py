@@ -58,7 +58,7 @@ def view_student_score():
             df = pd.DataFrame(subjects)
         
             if subjects:
-                st.table(df, use_container_width=True)
+                st.table(df)
                 sub_analysis = [
                     {
                         "Subject": name,
