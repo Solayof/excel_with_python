@@ -25,7 +25,7 @@ class Workbook:
     def saveWorkbook(self, fileName):
         if self.__workbook is None:
             return False
-        self.__workbook.save(f"{fileName}.xlsm")
+        self.__workbook.save(f"{fileName}.xlsx")
         return True
 
     def dbSubjects(self, sheetName="1ST TERM Db"):
@@ -62,14 +62,24 @@ class Workbook:
         db = self.getDbsheet(sheetName=sheetName)
         while db[scell].value:
             cell = "K2"
-            while db[cell].value and db[cell].value != f'={db[scell].coordinate}':
+            while db[cell].value:
+                print("Value: ", db[cell].value)
                 row, col = coordinate_to_tuple(cell)
-                cell = f"{get_column_letter(col + 2)}{row}"
+                cell = f"{get_column_letter(col + 3)}{row}"
+                print("Value cell: ", cell)
+            cell = 'K2'
+            while db[cell].value and db[cell].value != f'={scell}':
+                print(db[cell].value)
+                print(db[scell].coordinate, db[scell].value)
+                row, col = coordinate_to_tuple(cell)
+                cell = f"{get_column_letter(col + 4)}{row}"
         
             if db[cell].value == f'={db[scell].coordinate}':
                 sub_cells[db[scell].value] = cell
-            srow, scol = coordinate_to_tuple(cell)
+                print(sub_cells)
+            srow, scol = coordinate_to_tuple(scell)
             scell = f"{get_column_letter(scol)}{srow + 1}"
+            print(f"increate to {scell}")
         return sub_cells
 
 

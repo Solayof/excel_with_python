@@ -20,8 +20,8 @@ from pages import session_auth
 current_user = session_auth.current_user()
 if not current_user:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
-if current_user.isAdmin() is False:
-    st.switch_page("CHS_IGBOPE_PORTAL.py")
+# if current_user.isAdmin() is False:
+#     st.switch_page("CHS_IGBOPE_PORTAL.py")
 
 st.set_page_config(
     page_title="Create Student",
@@ -64,12 +64,12 @@ def create_student():
     if st.button("Add student") and firstName and lastName and admission_Number and clss:
         user = User.query.filter_by(email=email).one_or_none()
         if User.query.filter_by(email=email).one_or_none():
-            st.table(pd.DataFrame([user.to_dict()]), use_container_width=True)
+            st.table(pd.DataFrame([user.to_dict()]))
             st.error(f"User with the email exists")
             return
         if User.query.filter_by(username=username).one_or_none():
             user = User.query.filter_by(username=username).one_or_none()
-            st.table(pd.DataFrame([user.to_dict()]), use_container_width=True)
+            st.table(pd.DataFrame([user.to_dict()]))
             st.error(f"User with the username exists")
             return
         if password != confirm_password:
