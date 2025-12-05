@@ -38,6 +38,14 @@ class Workbook:
             cell = f"{get_column_letter(col + 3)}{row}"
             print(f"cell: {cell}")
         return sub
+
+    def free_subject_cells(self, sheetName):
+        subs = {}
+        cell = 'K2'
+        db = self.getDbsheet(sheetName)
+        while db[cell].value:
+            if db[cell].value.startswith("="):
+                pass
     
     def writeCell(self, cell, value, sheetName="1ST TERM Db"):
         sheet = self.getDbsheet(sheetName=sheetName)
@@ -52,34 +60,24 @@ class Workbook:
         db = self.getDbsheet(sheetName)
         while db[cell].value and db[cell].value != subject:
             row, col = coordinate_to_tuple(cell)
-            cell = f"{get_column_letter(col + 2)}{row}"
+            cell = f"{get_column_letter(col + 3)}{row}"
 
         if db[cell].value == subject:
             return cell
-    def get_jss_subject_cell(self, sheetName):
+    def get_subject_dict(self, sheetName):
         sub_cells = {}
         scell = 'CK4'
         db = self.getDbsheet(sheetName=sheetName)
-        while db[scell].value:
-            cell = "K2"
-            while db[cell].value:
-                print("Value: ", db[cell].value)
-                row, col = coordinate_to_tuple(cell)
-                cell = f"{get_column_letter(col + 3)}{row}"
-                print("Value cell: ", cell)
-            cell = 'K2'
-            while db[cell].value and db[cell].value != f'={scell}':
-                print(db[cell].value)
-                print(db[scell].coordinate, db[scell].value)
-                row, col = coordinate_to_tuple(cell)
-                cell = f"{get_column_letter(col + 4)}{row}"
-        
-            if db[cell].value == f'={db[scell].coordinate}':
-                sub_cells[db[scell].value] = cell
-                print(sub_cells)
-            srow, scol = coordinate_to_tuple(scell)
-            scell = f"{get_column_letter(scol)}{srow + 1}"
-            print(f"increate to {scell}")
+        cell = "K2"
+        while db[cell].value:
+            db_cell = db[cell]
+            if db_cell.value.startswith('='):
+                sub_cells[f'{db[db_cell.value[1:]].value}_{db_cell.coordinate}'] = db_cell.coordinate
+            else:
+                sub_cells[db_cell.value] = db_cell.coordinate
+            row, col = coordinate_to_tuple(cell)
+            cell = f"{get_column_letter(col + 3)}{row}"
+
         return sub_cells
 
 

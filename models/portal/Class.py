@@ -93,6 +93,17 @@ class Class(BaseModel, Base):
         worksheet.open_session()
 
         return worksheet
+
+    def fill_subjects_to_db_sheet(self, sheetName):
+        # if self.department.name.lower() != "general":
+        #     dpt_subs = self.sheetSubjects()
+        #     cell = "Q2"
+        #     db = 
+        #     for sub in dpt_subs:
+        #         if sub not in ["General Mathematics", "English Language"]:
+
+        #     stdrow, stdcol = coordinate_to_tuple(stdcell)
+        pass
     
     def generateSheet(self, term=None, session=None):
         students = self.students
@@ -108,9 +119,23 @@ class Class(BaseModel, Base):
         worksheet.open_session()
         sheet = worksheet.getDbsheet(sheetName=sheetName)
 
+        if self.department.name.lower() != 'general':
+            cell ="Q2"
+            row, col = coordinate_to_tuple(cell)
+            for sub in self.sheetSubjects:
+                if sheet[cell].value and sub not in ["General Mathematics", "English Language"]:
+                    ref_cell = sheet[cell]
+                    print(ref_cell.value)
+                    if ref_cell.value.startswith("="):
+                        sheet[ref_cell[1:]] = sub
+                        print(ref_cell.value)
+                        _, subcol = coordinate_to_tuple(subCell)
+                        cell = f"{get_column_letter(col + 3)}{row}"
+
         stdcell = "b4"
         stdrow, stdcol = coordinate_to_tuple(stdcell)
-        subject_cell = worksheet.get_jss_subject_cell(sheetName=sheetName)
+        subject_dict = worksheet.get_subject_dict(sheetName=sheetName)
+        print(subject_dict)
         for student in students:
             sheet.cell(stdrow, stdcol, student.fullName)
             subjects = student.term_subject(term=term, session=session)
@@ -121,7 +146,7 @@ class Class(BaseModel, Base):
             sheet.cell(stdrow, stdcol + 2, student.gender)
             sheet.cell(stdrow, stdcol + 3, student.classroom.className)
             for subject in subjects:
-                subCell = subject_cell[subject.name]
+                subCell = subject_dict[subject.name]
                 _, subcol = coordinate_to_tuple(subCell)
 
                 sheet.cell(stdrow, subcol - 1, subject.CA)

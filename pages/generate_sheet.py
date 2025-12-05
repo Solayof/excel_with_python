@@ -49,7 +49,7 @@ def generate_sheet():
         if code:
             clss = Class.query.filter_by(code=code).one_or_none()
         if st.button("Generate Sheet") and clss:
-            clss.generateSheet()
+            clss.generateSheet(term='First Term')
             st.success(f"sheet with file name: {code}.xlsx generated successfully")
 
 generate_sheet()
