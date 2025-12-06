@@ -43,7 +43,8 @@ class Class(BaseModel, Base):
     def __init__(self, *args, **kwargs):
         """initializing class
         """
-        className = None     
+        className = None
+        arm = ''  
         if kwargs:
             className = kwargs.pop("className", None)
             arm = kwargs.pop("arm", None)
@@ -95,15 +96,16 @@ class Class(BaseModel, Base):
         return worksheet
 
     def fill_subjects_to_db_sheet(self, sheetName):
-        # if self.department.name.lower() != "general":
-        #     dpt_subs = self.sheetSubjects()
-        #     cell = "Q2"
-        #     db = 
-        #     for sub in dpt_subs:
-        #         if sub not in ["General Mathematics", "English Language"]:
-
-        #     stdrow, stdcol = coordinate_to_tuple(stdcell)
-        pass
+        worksheet = self.getSheet()
+        worksheet.open_session()
+        sheet = worksheet.getDbsheet(sheetName=sheetName)
+        cell ="CK6"
+        row, col = coordinate_to_tuple(cell)
+        for sub in self.sheetSubjects:
+            if sub not in ["General Mathematics", "English Language"]:
+                sheet.cell(row, stdcol, student.admission_no)
+                row = row + 1
+        worksheet.saveWorkbook(self.code)
     
     def generateSheet(self, term=None, session=None):
         students = self.students
@@ -115,22 +117,12 @@ class Class(BaseModel, Base):
             sheetName = "2ND TERM Db "
         else:
             sheetName = '3RD TERM Db'
+        if self.department.name.lower() != 'general':
+            self.fill_subjects_to_db_sheet(sheetName)
         worksheet = self.getSheet()
         worksheet.open_session()
         sheet = worksheet.getDbsheet(sheetName=sheetName)
 
-        if self.department.name.lower() != 'general':
-            cell ="Q2"
-            row, col = coordinate_to_tuple(cell)
-            for sub in self.sheetSubjects:
-                if sheet[cell].value and sub not in ["General Mathematics", "English Language"]:
-                    ref_cell = sheet[cell]
-                    print(ref_cell.value)
-                    if ref_cell.value.startswith("="):
-                        sheet[ref_cell[1:]] = sub
-                        print(ref_cell.value)
-                        _, subcol = coordinate_to_tuple(subCell)
-                        cell = f"{get_column_letter(col + 3)}{row}"
 
         stdcell = "b4"
         stdrow, stdcol = coordinate_to_tuple(stdcell)

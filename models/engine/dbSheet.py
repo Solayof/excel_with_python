@@ -39,14 +39,6 @@ class Workbook:
             print(f"cell: {cell}")
         return sub
 
-    def free_subject_cells(self, sheetName):
-        subs = {}
-        cell = 'K2'
-        db = self.getDbsheet(sheetName)
-        while db[cell].value:
-            if db[cell].value.startswith("="):
-                pass
-    
     def writeCell(self, cell, value, sheetName="1ST TERM Db"):
         sheet = self.getDbsheet(sheetName=sheetName)
         sheet[cell] = value
@@ -66,7 +58,6 @@ class Workbook:
             return cell
     def get_subject_dict(self, sheetName):
         sub_cells = {}
-        scell = 'CK4'
         db = self.getDbsheet(sheetName=sheetName)
         cell = "K2"
         while db[cell].value:
