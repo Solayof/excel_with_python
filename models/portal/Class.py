@@ -90,7 +90,7 @@ class Class(BaseModel, Base):
         return new_dict
     
     def getSheet(self):
-        worksheet = Workbook(filePath=f"{self.code}.xlsm", defaultFile=f"{self.className[:3]}.xlsm")
+        worksheet = Workbook(filePath=f"{self.code}.xlsx", defaultFile=f"{self.className[:3]}.xlsm")
         worksheet.open_session()
 
         return worksheet
@@ -103,7 +103,7 @@ class Class(BaseModel, Base):
         row, col = coordinate_to_tuple(cell)
         for sub in self.sheetSubjects:
             if sub not in ["General Mathematics", "English Language"]:
-                sheet.cell(row, stdcol, student.admission_no)
+                sheet.cell(row, col, sub)
                 row = row + 1
         worksheet.saveWorkbook(self.code)
     
@@ -127,7 +127,8 @@ class Class(BaseModel, Base):
         stdcell = "b4"
         stdrow, stdcol = coordinate_to_tuple(stdcell)
         subject_dict = worksheet.get_subject_dict(sheetName=sheetName)
-        print(subject_dict)
+        for key, value in subject_dict.items():
+            print(key, value)
         for student in students:
             sheet.cell(stdrow, stdcol, student.fullName)
             subjects = student.term_subject(term=term, session=session)
@@ -139,6 +140,7 @@ class Class(BaseModel, Base):
             sheet.cell(stdrow, stdcol + 3, student.classroom.className)
             for subject in subjects:
                 subCell = subject_dict[subject.name]
+                print(subject.name, subCell)
                 _, subcol = coordinate_to_tuple(subCell)
 
                 sheet.cell(stdrow, subcol - 1, subject.CA)
@@ -146,23 +148,24 @@ class Class(BaseModel, Base):
                 sheet.cell(stdrow, subcol, subject.examScore)
                
             stdrow = stdrow + 1
+
         worksheet.saveWorkbook(self.code)
 
     @property
     def sheetSubjects(self):
-        general = ["General Mathematics", "English Language", "Basic science", "Basic Technology",
+        general = ["General Mathematics", "English Language", "Basic Science", "Basic Technology",
                         "Social Studies", "Civic Education",
                         "C.R.S", "Islamic Studies", "Business Studies",
                         "P.H.E", "Agricultural Science",
-                        "Computer Studies", "Yoruba"]
-        science = ["General Mathematics", "English Language", "Biology", "Chemistry", "Physics",
+                        "Imformation Technology", "Yoruba"]
+        science = ["General Mathematics", "Livestock farming", "English Language", "Biology", "Chemistry", "Physics",
                       "Agricultural Science", "Geography", "Economics", "Civic Education",
                       "Yoruba"]
-        commerce = ["General Mathematics", "English Language", "Biology",
-                      "Agricultural Science", "Geography", "Civic Education", "Economics", "Commerce",
-                      "Yoruba"]
         art = ["General Mathematics", "English Language", "Biology",
-                      "Agricultural Science", "Economics", "Commerce", "Civic Education", "Financial Accounting",
+                      "Agricultural Science", "Livestock farming", "Government", "Civic Education", "Economics", "Literature in English",
+                      "Yoruba"]
+        commerce = ["General Mathematics", "English Language", "Biology",
+                      "Agricultural Science", "Livestock farming", "Economics", "Geography", "Commerce", "Civic Education", "Financial Accounting",
                       "Yoruba"]
         if self.department.name.lower() == 'general':
             return general

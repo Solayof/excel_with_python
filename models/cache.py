@@ -9,6 +9,7 @@ from models.portal.Class import Class
 from models.portal.department import Department
 from models.portal.student import Student
 from models.portal.subject import Subject
+from models.portal.teacher import Teacher
 
 from models.portal.user import User
 
@@ -54,3 +55,10 @@ def departs_name_with_id():
     departs = Department.query.all()
     depart_dict = {d.name: d.id for d in departs}   
     return depart_dict
+
+st.cache_data(ttl=30000)
+def teacher_name_id():
+    teachers = Teacher.query.all()
+    teachers.sort(key=lambda s: s.fullName)
+    name_and_Id = {teacher.fullName: teacher.id for teacher in teachers}
+    return name_and_Id

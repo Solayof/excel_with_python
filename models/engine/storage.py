@@ -1,72 +1,79 @@
-#!/usr/bin/python3
-"""storage engine"""
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base import Base
 
-
-class Dbstorage():
-    """connecting database"""
+class Dbstorage:
     __engine = None
-    __session = None
-    tables = {}
+    __session_factory = None
 
     @classmethod
     def init(cls):
-        """initialzed the db engine"""
-        username = "school_admin"
-        password = "arisekola"
-        hostname = "localhost"
-        database = getenv("DATABASE", "school_db")
+        if cls.__engine:
+            return
 
-        if not cls.__engine or not cls.__session:
-            cls.__engine = create_engine(
-                 "sqlite:///schooldb.db", #f"mysql+mysqldb://{username}:{password}@{hostname}/{database}",
-                 connect_args={"check_same_thread": False}, # for sqlite
-                pool_pre_ping=True
+        cls.__engine = create_engine(
+            "sqlite:///schooldb.db",
+            connect_args={"check_same_thread": False, "timeout": 30},
+            pool_pre_ping=True
+        )
+
+        with cls.__engine.connect() as conn:
+            conn.exec_driver_sql("PRAGMA journal_mode=WAL;")
+
+        Base.metadata.create_all(cls.__engine)
+
+        cls.__session_factory = scoped_session(
+            sessionmaker(
+                bind=cls.__engine,
+                autoflush=False,
+                autocommit=False,
+                expire_on_commit=False
             )
-            Base.metadata.create_all(cls.__engine)
-            cls.__session = scoped_session (
-                sessionmaker(bind=cls.__engine, expire_on_commit=False)
-            )
-            Base.query = cls.__session.query_property()
-    
+        )
+
+        Base.query = cls.__session_factory.query_property()
+
     @classmethod
-    def open_session(cls):
-        """open new session"""
-        if not cls.__session:
+    def session(cls):
+        """Always return the SAME scoped session"""
+        if not cls.__session_factory:
             cls.init()
-    
+        return cls.__session_factory()
+
     @classmethod
     def new(cls, obj):
-        """add newobj to current db session"""
-        cls.__session.add(obj)
-    
+        cls.session().add(obj)
+
     @classmethod
     def save(cls):
-        """save object instance
-        """        
-        cls.__session.commit()
-    
+        try:
+            cls.session().commit()
+        except Exception as e:
+            cls.session().rollback()
+            raise e
+
     @classmethod
     def delete(cls, obj=None):
-        """delete obj instance
-
-        Args:
-            obj (class, optional): object to delete. Defaults to None.
-        """        
-        cls.__session.delete(obj)
-    
-    @classmethod
-    def create_table(cls):
-        """create models table in the database
-        """        
-        Base.metadata.create_all(cls.__engine)
+        if obj:
+            obj = cls.session().merge(obj)
+            cls.session().delete(obj)
 
     @classmethod
     def close(cls):
-        """close storage
-        """        
-        if cls.__session:
-            cls.__session.remove()
+        if cls.__session_factory:
+            cls.__session_factory.remove()
+
+    @classmethod
+    def create_table(cls):
+        """create models table in the database"""
+        Base.metadata.create_all(cls.__engine)
+
+    # @classmethod
+    # def close(cls):
+    #     """close storage"""
+    #     if cls.__session:
+    #         cls.__session.close()
+    #         cls.__session = None
+    #     if cls.__session_factory:
+    #         cls.__session_factory.remove()
