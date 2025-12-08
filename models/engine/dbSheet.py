@@ -36,7 +36,7 @@ class Workbook:
             "For inquiries or support, contact: solomonayofemi@gmail.com."
             )
         self.__workbook.properties.lastModifiedBy='Solomon Ayofemi Moses'
-        self.__workbook.propeties.title = f"{fileName} Students Report"
+        self.__workbook.properties.title = f"{fileName} Students Report"
         self.__workbook.save(f"{fileName}.xlsx")
         return True
 
