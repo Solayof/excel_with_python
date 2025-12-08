@@ -65,9 +65,6 @@ def admin_privileges():
                 return
             admin.save()
             st.success("Privileges granted")
-            for key, val in admin.privileges.items():
-                st.info(f"{key}: {val}")
-
             
 
 admin_privileges()

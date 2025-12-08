@@ -70,10 +70,10 @@ def create_teacher():
         teacher = Teacher()
         teacher.username = username
         teacher.password = password
-        teacher.firstName = firstName
-        teacher.middleName = middleName
+        teacher.firstName = firstName.upper()
+        teacher.middleName = middleName.upper()
         teacher.last_promote_date = last_promotion_date
-        teacher.lastName = lastName
+        teacher.lastName = lastName.upper()
         teacher.gender = gender
         teacher.grade_level = grade_level
         if Teacher.query.filter_by(file_no=file_no).one_or_none():

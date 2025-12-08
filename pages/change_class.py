@@ -53,7 +53,7 @@ def change_class():
         if st.button("Change Class") and stud and clss_to:
             stud.classroom_id = clss_to.id
             stud.save()
-            # st.write(pd.DataFrame([stud.to_dict()]))
+            st.dataframe(pd.DataFrame([stud.to_dict()]))
             st.success("Class changed successfully")
 
 change_class()

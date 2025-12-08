@@ -70,7 +70,7 @@ def upload_CSV_record():
         
 
         
-        st.table(pd.DataFrame([name_list]))
+        st.dataframe(pd.DataFrame([name_list]))
         
         code = st.selectbox("Class", getClassrooms())
     

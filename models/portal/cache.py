@@ -27,7 +27,7 @@ def current_session():
     return f"20{yr}-20{yr + 1}"
 
 
-@st.cache_data(ttl=5000)
+@st.cache_data(ttl=360)
 def getclassSubjects(code):
      clss = Class.query.filter_by(code=code).one_or_none()
      return clss.sheetSubjects

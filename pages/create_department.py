@@ -50,6 +50,6 @@ def create_department():
             return
         depart.save()
         st.success(f"Department {name} created successfully")
-        st.table(pd.DataFrame([depart.to_dict()]))
+        st.dataframe(pd.DataFrame([depart.to_dict()]))
 
 create_department()

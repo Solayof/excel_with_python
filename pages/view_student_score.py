@@ -58,7 +58,7 @@ def view_student_score():
             df = pd.DataFrame(subjects)
         
             if subjects:
-                st.table(df)
+                st.dataframe(df)
                 sub_analysis = [
                     {
                         "Subject": name,
@@ -70,6 +70,6 @@ def view_student_score():
                                     title=f"Class {code} - {student.fullName}",
                                     labels={"Average Score": "Avg Score"}, 
                                     color="Average Score", height=500)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='content')
     
 view_student_score()

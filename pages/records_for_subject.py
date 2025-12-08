@@ -74,12 +74,12 @@ def record_for_subject():
 
         if studentlist:
             stdf = pd.DataFrame(studentlist)
-            st.table(stdf.sort_values(by="TOTAL", ascending=False))
+            st.dataframe(stdf.sort_values(by="TOTAL", ascending=False))
             pldf = stdf[["FULLNAME", "TOTAL"]]
             fig = px.bar(pldf, x="FULLNAME", y="TOTAL", 
                 title=f"Class {code} {subjectname}- Average Performance",
                 labels={"TOTAL": "Total Score"}, 
                 color="TOTAL", height=500)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='content')
 
 record_for_subject()

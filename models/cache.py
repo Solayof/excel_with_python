@@ -13,17 +13,17 @@ from models.portal.teacher import Teacher
 
 from models.portal.user import User
 
-@st.cache_data(ttl=5000)
+@st.cache_data(ttl=3600)
 def getClassrooms():
     return Class.all()
 
-@st.cache_data(ttl=5000)
+@st.cache_data(ttl=360)
 def getStudentsIdandNames(code):
     clss = Class.query.filter_by(code=code).one_or_none()
     if clss:
         return clss.getStudentsIdandNames()
 
-@st.cache_data(ttl=5000)
+@st.cache_data(ttl=360)
 def getclassSubjects(code):
      clss = Class.query.filter_by(code=code).one_or_none()
      if clss:
@@ -33,7 +33,7 @@ def getclassSubjects(code):
 def getClassroom(code):
     return Class.query.filter_by(code=code).one_or_none()
 
-@st.cache_data(ttl=30000)
+@st.cache_data(ttl=360)
 def getStudentById(id):
     return Student.query.filter_by(id=id).one_or_none()
 
@@ -56,7 +56,7 @@ def departs_name_with_id():
     depart_dict = {d.name: d.id for d in departs}   
     return depart_dict
 
-st.cache_data(ttl=30000)
+st.cache_data(ttl=360)
 def teacher_name_id():
     teachers = Teacher.query.all()
     teachers.sort(key=lambda s: s.fullName)

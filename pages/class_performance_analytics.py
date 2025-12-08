@@ -79,14 +79,14 @@ def class_performance():
                 
                 st.subheader("Total Score Per Student")
                 df_perf["Grade"] = df_perf["Total Score"].apply(grade)
-                st.table(df_perf)
+                st.dataframe(df_perf)
 
                 # Bar chart for Total Score
                 fig = px.bar(df_perf, x="Name", y="Total Score", 
                             title=f"Class {code} - Average Performance",
                             labels={"Total Score": "Avg Score"}, 
                             color="Total Score", height=500)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='content')
 
                 
 
