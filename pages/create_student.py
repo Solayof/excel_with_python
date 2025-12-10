@@ -64,11 +64,15 @@ def create_student():
     if st.button("Add student") and firstName and lastName and admission_Number and clss:
         user = User.query.filter_by(email=email).one_or_none()
         if User.query.filter_by(email=email).one_or_none():
+            std = Student.query.filter_by(id=user.id).one_or_none()
+            st.dataframe(pd.DataFrame([std.classroom.to_dict()]))
             st.dataframe(pd.DataFrame([user.to_dict()]))
             st.error(f"User with the email exists")
             return
         if User.query.filter_by(username=username).one_or_none():
             user = User.query.filter_by(username=username).one_or_none()
+            std = Student.query.filter_by(id=user.id).one_or_none()
+            st.dataframe(pd.DataFrame(std.classroom.to_dict()))
             st.dataframe(pd.DataFrame([user.to_dict()]))
             st.error(f"User with the username exists")
             return

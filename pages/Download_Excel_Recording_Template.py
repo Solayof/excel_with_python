@@ -1,19 +1,14 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+from openpyxl import Workbook
 import numpy as np
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import (getClassrooms,
-                          getClassroom,
-                          getStudentById,
-                          getStudentsIdandNames,
-                          getclassSubjects,
-                          session_list)
+from models.cache import (getClassrooms)
 from models.portal.admission import Admission
-from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
 from models.portal.department import Department
 
@@ -29,8 +24,9 @@ if not current_user:
 if current_user.isAdmin() is False:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
 
+
 st.set_page_config(
-    page_title="Record Student Subject Score",
+    page_title="Download Excel Recording Template",
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items={
@@ -39,26 +35,34 @@ st.set_page_config(
         'About': "# This is a header. This is an app to manage student result"
     }
 )
-st.title("Download Sheet")
+st.title("Recording Template")
 
 
 
-def download_sheet():
-    st.header("Download Sheet")
-    code = st.selectbox("Class", getClassrooms())
-    if code:
-        clss = Class.query.filter_by(code=code).one_or_none()
-
+def template_sheet():
+        code = st.selectbox("Class", getClassrooms())
+        wb = Workbook()
+        clss = None
+        if code:
+            clss = Class.query.filter_by(code=code).one_or_none()
+        if st.button("Generate Template") and clss:
+            ws = wb.active
+            ws.title = code
+            ws.append(["ID", "FULL_NAME", "CA", "EXAM_SCORE"])
+            for student in clss.students:
+                 ws.append([student.admission_no, student.fullName])
+            wb.save(f"template-{code}.xlsx")
+            st.success(f"sheet with file name: template-{code}.xlsx generated successfully")
         try:
-            with open(f"{clss.code}.xlsx", "rb") as file:
+            with open(f"template-{clss.code}.xlsx", "rb") as file:
                 st.download_button(
-                    label=f"Download {clss.code}.xlsx file",
+                    label=f"Download template-{clss.code}.xlsx file",
                     data=file,
-                    file_name=f"{clss.code}.xlsx",
+                    file_name=f"template-{clss.code}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
                 )
                 
         except FileNotFoundError:
             st.error("Generate sheet for the class first")
 
-download_sheet()
+template_sheet()

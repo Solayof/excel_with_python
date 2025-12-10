@@ -29,6 +29,7 @@ if not current_user:
 if current_user.isAdmin() is False:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
 
+
 st.set_page_config(
     page_title="Record Student Subject Score",
     layout="wide",
@@ -39,37 +40,44 @@ st.set_page_config(
         'About': "# This is a header. This is an app to manage student result"
     }
 )
-st.title("Edit Student Subject Score")
+st.title("View Student Subject Score")
 
-def edit_subject():
-    st.header("Update Scores")
-    code = st.selectbox("Class", getClassrooms())
-    subjectname = None
-    name = None
-    stud = None
-    term = None
-    if code:
-        fullNameId = getStudentsIdandNames(code)
-        if fullNameId:
-            name = st.selectbox("Name", fullNameId.keys())
-        if name:
-            stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
+
+def upload_Excel_template():
+    excel_file = st.file_uploader("Upload CSV file", type="xlsx")
+    data = None
+    requiured_cols = {
+        "ID",
+        "FULL_NAME",
+        "CA",
+        "EXAM_SCORE"
+    }
+    if excel_file:
+        code = None
+        clss = None
+        df = pd.read_excel(excel_file)
+        st.dataframe(df)
+        dic = df.to_dict()
+        if not requiured_cols.issubset(df.columns):
+            st.error(f"Excel must have columns: {', '.join(requiured_cols)}")
+            return
+        code = st.selectbox("Class", getClassrooms())
+        if code:
+            clss = Class.query.filter_by(code=code).one_or_none()
             term_lists = term_list()
             term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
-        if stud and term:
-            subjectlist = [sub for sub in getclassSubjects(code) if sub in stud.subject_recorded(term=term)]
-            subjectname = st.selectbox("Subject", subjectlist)
-    
-            subject = Subject.query.filter_by(
-                student_id=stud.id, name=subjectname, session=current_session()).one_or_none()
-            if subject:
-                ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
-                exam = st.number_input("Examination Score", 0, 70, subject.examScore)
+            subjects = getclassSubjects(code)
+            subjectname = st.selectbox("Subject", subjects)
 
-                if st.button("Update"):
-                    subject.CA = ca
-                    subject.examScore = exam
-                    subject.save()
+        # for d in df["ID"]:
+        #     dff = df[["ID"]==[d]]
+        #     df.iterrows
+        #     print(dff)
 
-                    st.success("score updated successfully")
-edit_subject()
+        for row in df.iterrows():
+            dic = list(row)
+            print(dic)
+        
+
+
+upload_Excel_template()
