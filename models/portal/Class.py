@@ -161,7 +161,7 @@ class Class(BaseModel, Base):
         science = ["General Mathematics", " Livestock farming,", "English Language", "Biology", "Chemistry", "Physics",
                       "Agricultural Science", "Geography", "Economics", "Civic Education",
                       "Yoruba"]
-        art = ["General Mathematics", "English Language", "Biology",
+        art = ["General Mathematics", "English Language", "Biology", "CRS",
                       "Agricultural Science", " Livestock farming,", "Government", "Civic Education", "Economics", "Literature in English",
                       "Yoruba"]
         commerce = ["General Mathematics", "English Language", "Biology",
