@@ -68,16 +68,35 @@ def upload_Excel_template():
             term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
             subjects = getclassSubjects(code)
             subjectname = st.selectbox("Subject", subjects)
-
-        # for d in df["ID"]:
-        #     dff = df[["ID"]==[d]]
-        #     df.iterrows
-        #     print(dff)
-
-        for row in df.iterrows():
-            dic = list(row)
-            print(dic)
-        
+        if st.button("Upload Scores"):
+            for row in df.itertuples(index=False):
+                std = Student.query.filter_by(admission_no=row).one_or_none()
+                if std is None:
+                    st.error(f"Student with admission number {row.ID} not found")
+                    continue
+                sub  = Subject.query.filter_by(
+                    name=subjectname,
+                    student_id=std.id,
+                    term=term,
+                    ).one_or_none()
+                if sub is None:
+                    sub = Subject(
+                        name=subjectname,
+                        student_id=std.id,
+                        term=term,
+                        classroom_id=clss.id,
+                        session=current_session(),
+                        ca_score=row.CA,
+                        exam_score=row.EXAM_SCORE,
+                    )
+                    sub.save()
+                    st.info(f"Scores for {std.full_name} added")
+                else:
+                    sub.ca_score = row.CA
+                    sub.exam_score = row.EXAM_SCORE
+                    sub.save()
+                    st.info(f"Scores for {std.full_name} updated")
+            st.success("Scores uploaded successfully")    
 
 
 upload_Excel_template()
