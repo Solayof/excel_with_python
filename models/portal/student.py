@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 """student model
 """
-from sqlalchemy import Column, ForeignKey, JSON, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import and_, Column, ForeignKey, JSON, String
+from sqlalchemy.orm import aliased, relationship
+from sqlalchemy.orm import aliased
 from models.portal.cache import current_session, current_term, getclassSubjects
 from models.portal.admission import Admission
 from models.portal.subject import Subject
@@ -152,3 +153,24 @@ class Student(Admission):
             sub_dict = self.records_for_subject(subject=sub, session=session)
             subs[sub] = sum(sub_dict.values())
         return subs
+    
+    @classmethod
+    def students_without_subject(cls, subject_name, term, session, classroom_id=None):
+        SubjectAlias = aliased(Subject)
+
+        query = cls.query.outerjoin(
+            SubjectAlias,
+            and_(
+                SubjectAlias.student_id == cls._id,
+                SubjectAlias.name == subject_name,
+                SubjectAlias.term == term,
+                SubjectAlias.session == session
+            )
+        ).filter(SubjectAlias.id == None)
+
+        # Optional: limit to a classroom
+        if classroom_id:
+            query = query.filter(cls.classroom_id == classroom_id)
+
+        return query.all()
+  

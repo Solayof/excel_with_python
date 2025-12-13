@@ -6,7 +6,7 @@ from hashlib import sha256
 from sqlalchemy import Column, Date, String
 from models.base import Base
 from models.portal.usermodel import UserModel
-import models
+
 
 
 class User(UserModel, Base):
@@ -67,8 +67,9 @@ class User(UserModel, Base):
 
         Returns:
             bool: return True if admin otherwise False
-        """        
-        teac = models.portal.admin.Admin.query.filter_by(teacher_id=self.id).one_or_none()
+        """   
+        from models.portal.admin import Admin     
+        teac = Admin.query.filter_by(teacher_id=self.id).one_or_none()
         if teac:
             return True
         else:

@@ -62,3 +62,28 @@ def teacher_name_id():
     teachers.sort(key=lambda s: s.fullName)
     name_and_Id = {teacher.fullName: teacher.id for teacher in teachers}
     return name_and_Id
+
+st.cache_data(ttl=30)
+def students_without_subject(subject_name, term, session, classroom_id=None):
+     return Student.students_without_subject(
+          subject_name=subject_name,
+          term=term,
+          session=session,
+          classroom_id=classroom_id
+          )
+
+st.cache_data(ttl=30)
+def students_without_subject_dict(subject_name, term, session, classroom_id=None):
+     students = Student.students_without_subject(
+          subject_name=subject_name,
+          term=term,
+          session=session,
+          classroom_id=classroom_id
+          )
+     return {student.fullName: student.id for student in students}
+
+@st.cache_data(ttl=36000)
+def get_classroom_id(code):
+    clss = Class.query.filter_by(code=code).one_or_none()
+    if clss:
+        return clss.id

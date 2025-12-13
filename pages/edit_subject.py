@@ -61,7 +61,7 @@ def edit_subject():
             subjectname = st.selectbox("Subject", subjectlist)
     
             subject = Subject.query.filter_by(
-                student_id=stud.id, name=subjectname, session=current_session()).one_or_none()
+                student_id=stud.id, name=subjectname, session=current_session(), term=term).one_or_none()
             if subject:
                 ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
                 exam = st.number_input("Examination Score", 0, 70, subject.examScore)

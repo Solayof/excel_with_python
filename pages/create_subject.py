@@ -7,11 +7,12 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (departs_name_with_id, getClassrooms,
-                          getClassroom,
+                          get_classroom_id,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
-                          session_list)
+                          session_list,
+                          students_without_subject_dict)
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
@@ -44,26 +45,23 @@ def create_subject():
     st.header("Upload Scores")
 
     code = st.selectbox("Class", getClassrooms())
-    subjectname = None
-    name = None
-    departs_dict = departs_name_with_id()
-    depart_id = departs_dict.get(name, None) if name else None
-    if code:
-        fullNameId = getStudentsIdandNames(code)
-        if fullNameId:
-            name = st.selectbox("Name", fullNameId.keys())
-        term_lists = term_list()
-        term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
-        if name and term:
-            student = Student.query.filter_by(id=fullNameId[name]).one_or_none()
-            subjectlist = [sub for sub in getclassSubjects(code) 
-                           if sub not in student.subject_recorded(term=term)]
-    
-            subjectname = st.selectbox("Subject", subjectlist)
+    subjectlist = getclassSubjects(code)
+    subjectname = st.selectbox("Subject", subjectlist)
+    term_lists = term_list()
+    term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
+    fullNameId = students_without_subject_dict(
+        subject_name=subjectname,
+        term=term,
+        session=current_session(),
+        classroom_id=get_classroom_id(code)
+    )
+    name = st.selectbox("Name", fullNameId.keys())
+
+    student = Student.query.filter_by(id=fullNameId[name]).one_or_none()
     ca = st.number_input("Continuous Assessment", 0, 30)
     exam = st.number_input("Examination Score", 0, 70)
 
-    if st.button("upload score") and name and subjectname and ca and exam:
+    if st.button("upload score") and name and subjectname and ca and exam and student:
         mth = datetime.now().strftime("%m")
         if term == "First Term" and mth not in ['09', '10', '11', '12']:
             st.warning("You are recording first term score outside first term period")
@@ -74,6 +72,15 @@ def create_subject():
         if term == "Third Term" and mth not in ['05', '06', '07', '08']:
             st.warning("You are recording third term score outside third term period")
             return
+        sub  = Subject.query.filter_by(
+                    name=subjectname,
+                    student_id=student.id,
+                    term=term,
+                    session=current_session()
+                    ).one_or_none()
+        if sub:
+            st.error(f"Score for {subjectname} already recorded for {name} in {term} {current_session()} academic session")
+            return
         subject = Subject()
         subject.name = subjectname
         subject.student_id = student.id
@@ -81,7 +88,6 @@ def create_subject():
         subject.examScore = exam
         subject.term = term
         subject.session = current_session()
-        subject.department_id = depart_id
         if not subject.student_id:
             st.error("score can not be save, no student attached")
         subject.save()

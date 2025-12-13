@@ -70,9 +70,12 @@ def upload_Excel_template():
             subjectname = st.selectbox("Subject", subjects)
         if st.button("Upload Scores"):
             for row in df.itertuples(index=False):
-                std = Student.query.filter_by(admission_no=row).one_or_none()
+                std = Student.query.filter_by(admission_no=row.ID).one_or_none()
                 if std is None:
                     st.error(f"Student with admission number {row.ID} not found")
+                    continue
+                if std.classroom_id != clss.id:
+                    st.error(f"Student {std.fullName} not in class {code}")
                     continue
                 sub  = Subject.query.filter_by(
                     name=subjectname,
@@ -84,18 +87,17 @@ def upload_Excel_template():
                         name=subjectname,
                         student_id=std.id,
                         term=term,
-                        classroom_id=clss.id,
                         session=current_session(),
-                        ca_score=row.CA,
-                        exam_score=row.EXAM_SCORE,
+                        CA=row.CA,
+                        examScore=row.EXAM_SCORE,
                     )
                     sub.save()
-                    st.info(f"Scores for {std.full_name} added")
+                    st.info(f"Scores for {std.fullName} added")
                 else:
-                    sub.ca_score = row.CA
-                    sub.exam_score = row.EXAM_SCORE
+                    sub.CA = row.CA
+                    sub.examScore = row.EXAM_SCORE
                     sub.save()
-                    st.info(f"Scores for {std.full_name} updated")
+                    st.info(f"Scores for {std.fullName} updated")
             st.success("Scores uploaded successfully")    
 
 
