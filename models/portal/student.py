@@ -173,4 +173,24 @@ class Student(Admission):
             query = query.filter(cls.classroom_id == classroom_id)
 
         return query.all()
+
+    @classmethod
+    def students_with_subject(cls, subject_name, term, session, classroom_id=None):
+        SubjectAlias = aliased(Subject)
+
+        query = cls.query.outerjoin(
+            SubjectAlias,
+            and_(
+                SubjectAlias.student_id == cls._id,
+                SubjectAlias.name == subject_name,
+                SubjectAlias.term == term,
+                SubjectAlias.session == session
+            )
+        ).filter(SubjectAlias.id != None)
+
+        # Optional: limit to a classroom
+        if classroom_id:
+            query = query.filter(cls.classroom_id == classroom_id)
+
+        return query.all()
   

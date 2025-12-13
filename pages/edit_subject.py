@@ -6,12 +6,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import (getClassrooms,
-                          getClassroom,
-                          getStudentById,
-                          getStudentsIdandNames,
-                          getclassSubjects,
-                          session_list)
+from models.cache import (get_classroom_id, getClassrooms, getclassSubjects,
+                          students_with_subject_dict)
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
 from models.portal.Class import Class
@@ -43,33 +39,32 @@ st.title("Edit Student Subject Score")
 
 def edit_subject():
     st.header("Update Scores")
-    code = st.selectbox("Class", getClassrooms())
-    subjectname = None
-    name = None
     stud = None
     term = None
-    if code:
-        fullNameId = getStudentsIdandNames(code)
-        if fullNameId:
-            name = st.selectbox("Name", fullNameId.keys())
-        if name:
-            stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
-            term_lists = term_list()
-            term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
-        if stud and term:
-            subjectlist = [sub for sub in getclassSubjects(code) if sub in stud.subject_recorded(term=term)]
-            subjectname = st.selectbox("Subject", subjectlist)
-    
-            subject = Subject.query.filter_by(
-                student_id=stud.id, name=subjectname, session=current_session(), term=term).one_or_none()
-            if subject:
-                ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
-                exam = st.number_input("Examination Score", 0, 70, subject.examScore)
+    code = st.selectbox("Class", getClassrooms())
+    subjectlist = getclassSubjects(code)
+    subjectname = st.selectbox("Subject", subjectlist)
+    term_lists = term_list()
+    term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
+    fullNameId = students_with_subject_dict(
+        subject_name=subjectname,
+        term=term,
+        session=current_session(),
+        classroom_id=get_classroom_id(code)
+    )
+    name = st.selectbox("Name", fullNameId.keys())
+    if name:
+        stud = Student.query.filter_by(id=fullNameId[name]).one_or_none()
+        subject = Subject.query.filter_by(
+            student_id=stud.id, name=subjectname, session=current_session(), term=term).one_or_none()
+        if subject:
+            ca = st.number_input("Continuous Assessment", 0, 30, subject.CA)    
+            exam = st.number_input("Examination Score", 0, 70, subject.examScore)
 
-                if st.button("Update"):
-                    subject.CA = ca
-                    subject.examScore = exam
-                    subject.save()
+            if st.button("Update"):
+                subject.CA = ca
+                subject.examScore = exam
+                subject.save()
 
-                    st.success("score updated successfully")
+                st.success("score updated successfully")
 edit_subject()

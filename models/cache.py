@@ -87,3 +87,13 @@ def get_classroom_id(code):
     clss = Class.query.filter_by(code=code).one_or_none()
     if clss:
         return clss.id
+    
+st.cache_data(ttl=30)
+def students_with_subject_dict(subject_name, term, session, classroom_id=None):
+     students = Student.students_with_subject(
+          subject_name=subject_name,
+          term=term,
+          session=session,
+          classroom_id=classroom_id
+          )
+     return {student.fullName: student.id for student in students}

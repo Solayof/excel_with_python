@@ -56,8 +56,8 @@ def create_subject():
         classroom_id=get_classroom_id(code)
     )
     name = st.selectbox("Name", fullNameId.keys())
-
-    student = Student.query.filter_by(id=fullNameId[name]).one_or_none()
+    if name:
+        student = Student.query.filter_by(id=fullNameId[name]).one_or_none()
     ca = st.number_input("Continuous Assessment", 0, 30)
     exam = st.number_input("Examination Score", 0, 70)
 
