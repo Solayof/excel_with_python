@@ -153,28 +153,7 @@ class Class(BaseModel, Base):
 
     @property
     def sheetSubjects(self):
-        general = ["General Mathematics", "English Language", "Basic Science", "Basic Technology",
-                        "Social Studies", "Civic Education",
-                        "C.R.S", "Islamic Studies", "Business Studies",
-                        "P.H.E", "Agricultural Science",
-                        "Imformation Technology", "Yoruba"]
-        science = ["General Mathematics", " Livestock farming,", "English Language", "Biology", "Chemistry", "Physics",
-                      "Agricultural Science", "Geography", "Economics", "Civic Education",
-                      "Yoruba"]
-        art = ["General Mathematics", "English Language", "Biology", "CRS",
-                      "Agricultural Science", " Livestock farming,", "Government", "Civic Education", "Economics", "Literature in English",
-                      "Yoruba"]
-        commerce = ["General Mathematics", "English Language", "Biology",
-                      "Agricultural Science", " Livestock farming,", "Economics", "Geography", "Commerce", "Civic Education", "Financial Accounting",
-                      "Yoruba"]
-        if self.department.name.lower() == 'general':
-            return general
-        elif self.department.name.lower() == 'science':
-            return science
-        elif self.department.name.lower() == 'art':
-            return art
-        else:
-            return commerce
+        return self.department.subjects
     
 
     def students_to_dict(self):

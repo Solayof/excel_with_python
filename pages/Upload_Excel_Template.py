@@ -56,8 +56,30 @@ def upload_Excel_template():
         code = None
         clss = None
         df = pd.read_excel(excel_file)
+        df.columns = df.columns.str.strip().str.upper()
+        df["ID"] = df["ID"].astype(str).str.strip()
+        MAX_CA = 30
+        MAX_EXAM = 70
+
+        # Convert to numeric (invalid values become NaN)
+        df["CA"] = pd.to_numeric(df["CA"], errors="coerce")
+        df["EXAM_SCORE"] = pd.to_numeric(df["EXAM_SCORE"], errors="coerce")
+
+        # Check for invalid values
+        invalid_rows = df[
+            (df["CA"].isna()) |
+            (df["EXAM_SCORE"].isna()) |
+            (df["CA"] < 0) |
+            (df["CA"] > MAX_CA) |
+            (df["EXAM_SCORE"] < 0) |
+            (df["EXAM_SCORE"] > MAX_EXAM)
+        ]
+        if not invalid_rows.empty:
+            st.error("Some rows have invalid CA or EXAM_SCORE values")
+            st.dataframe(invalid_rows)
+            st.stop()
+
         st.dataframe(df)
-        dic = df.to_dict()
         if not requiured_cols.issubset(df.columns):
             st.error(f"Excel must have columns: {', '.join(requiured_cols)}")
             return
@@ -70,6 +92,13 @@ def upload_Excel_template():
             subjectname = st.selectbox("Subject", subjects)
         if st.button("Upload Scores"):
             for row in df.itertuples(index=False):
+                if row.CA < 0 or row.CA > 30:
+                    st.error(f"Invalid CA ({row.CA}) for ID {row.ID}")
+                    continue
+
+                if row.EXAM_SCORE < 0 or row.EXAM_SCORE > 70:
+                    st.error(f"Invalid EXAM score ({row.EXAM_SCORE}) for ID {row.ID}")
+                    continue
                 std = Student.query.filter_by(admission_no=row.ID).one_or_none()
                 if std is None:
                     st.error(f"Student with admission number {row.ID} not found")

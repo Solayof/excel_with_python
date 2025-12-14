@@ -6,6 +6,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+from sqlalchemy.orm.attributes import flag_modified
 from models.cache import getClassrooms, getClassroom, getStudentById, getStudentsIdandNames, getclassSubjects, departs_name_with_id
 from models.portal.teacher import Teacher
 from models.portal.department import Department
@@ -19,7 +20,7 @@ if current_user.isAdmin() is False:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
 
 st.set_page_config(
-    page_title="Create Department",
+    page_title="Update Department",
     layout="wide",
     initial_sidebar_state="collapsed",
     menu_items={
@@ -30,11 +31,11 @@ st.set_page_config(
 )
 st.title("Create Department")
 
-def create_department():
+def update_department_subject():
     all_subjects = (
         "General Mathematics", "English Language", "Basic Science", "Basic Technology",
         "Social Studies", "Civic Education",
-        "C.R.S", "Islamic Studies", "Business Studies",
+        "C.R.S", "IRS", "Islamic Studies", "Business Studies",
         "P.H.E", "Agricultural Science",
         "Imformation Technology", "Yoruba",
         " Livestock farming,", "English Language", "Biology", "Chemistry", "Physics",
@@ -42,17 +43,16 @@ def create_department():
         "CRS", "Government", "Literature in English",
         "Commerce", "Financial Accounting"
     )
-    name = st.text_input("Department Name", placeholder="Department Name")
-    selected_subjects = st.multiselect("Select your subjects:", all_subjects)
-    if st.button("Add Department") and name and selected_subjects:
-        depart = Department(name=name.upper())
-        selected_subjects = [sub.upper() for sub in selected_subjects]
-        depart.subjects = selected_subjects
-        if Department.query.filter_by(name=name.upper()).one_or_none():
-            st.warning(f"Department {name} exists")
-            return
-        depart.save()
-        st.success(f"Department {name} created successfully")
-        st.dataframe(pd.DataFrame([depart.to_dict()]))
-
-create_department()
+    depart_dict = departs_name_with_id()
+    name = st.selectbox("Department Name", depart_dict.keys())
+    if name:
+        depart = Department.query.filter_by(name=name.upper()).one_or_none()
+        selected_subjects = st.multiselect("Select your subjects:", all_subjects, depart.subjects)
+        if st.button("Update Department") and name and selected_subjects:
+            depart.subjects = selected_subjects
+            flag_modified(depart, "subjects")
+            depart.save()
+            st.success(f"Department {name} updated successfully")
+            st.dataframe(pd.DataFrame([depart.to_dict()]))
+ 
+update_department_subject()

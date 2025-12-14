@@ -42,57 +42,126 @@ st.set_page_config(
 )
 st.title("View Student Subject Score")
 
-
 def upload_CSV_record():
-    csv_text = st.text_area("Past your csv text here")
-    csv_file = st.file_uploader("Upload CSV file", type="csv")
+    st.subheader("Upload Student Subject Scores")
+
+    csv_text = st.text_area("Paste your CSV text here")
+    csv_file = st.file_uploader("Or upload CSV file", type="csv")
+
+    required_cols = {"ID", "FULL_NAME", "CA", "EXAM_SCORE"}
     data = None
-    requiured_cols = {
-        "FULLNAME",
-        "CA",
-        "EXAM_SCORE",
-        "FIRST_TERM_SCORE",
-        "SECOND_TERM_SCORE"
-    }
-    if st.button("Upload") and csv_text:
-        try:
-            data = pd.read_csv(StringIO(csv_text))
-        except Exception as e:
-            st.warning("eerror")
+
+    if csv_text:
+        data = StringIO(csv_text)
     elif csv_file:
-        data = pd.read_csv(csv_file)
-    if isinstance(data, pd.DataFrame):
-        if not requiured_cols.issubset(data.columns):
-            st.error(f"CSV must have columns: {', '.join(requiured_cols)}")
-            return
-        name_list = data["FULLNAME"].unique()
-        print(name_list)
-        
+        data = csv_file
 
-        
-        st.dataframe(pd.DataFrame([name_list]))
-        
-        code = st.selectbox("Class", getClassrooms())
-    
-        if code:
-            fullNameId = getStudentsIdandNames(code)
-            for name in name_list:
-                if name in fullNameId.keys():
-                    student_data = data[data["FULLNAME"] == "SOLOMON"].iloc[0].to_dict()
-                    st.dataframe(pd.DataFrame([student_data]))
-                    subject = Subject()
-                    subject.student_id = fullNameId[name]
+    if not data:
+        return
 
-                    if student_data.get("CA", 0) <= 30:
-                        subject.CA = student_data.get("CA", 0)
-                    if student_data.get("EXAM_SCORE", 0) <= 70:
-                        subject.examScore = student_data.get("EXAM_SCORE", 0)
-                    if student_data.get("FIRST_TERM_SCORE", 0):
-                        subject.firstTermScore = student_data.get("FIRST_TERM_SCORE", 0)
-                    if student_data.get("SECOND_TERM_SCORE", 0):
-                        subject.secondTermScore = student_data.get("SECOND_TERM_SCORE", 0)
-                    subject.save()
-                else:
-                    st.warning(f"{name} is not a student of {code}")
+    try:
+        df = pd.read_csv(data, dtype={"ID": str})
+        df.columns = df.columns.str.strip().str.upper()
+        df["ID"] = df["ID"].astype(str).str.strip()
+        MAX_CA = 30
+        MAX_EXAM = 70
+
+        # Convert to numeric (invalid values become NaN)
+        df["CA"] = pd.to_numeric(df["CA"], errors="coerce")
+        df["EXAM_SCORE"] = pd.to_numeric(df["EXAM_SCORE"], errors="coerce")
+
+        # Check for invalid values
+        invalid_rows = df[
+            (df["CA"].isna()) |
+            (df["EXAM_SCORE"].isna()) |
+            (df["CA"] < 0) |
+            (df["CA"] > MAX_CA) |
+            (df["EXAM_SCORE"] < 0) |
+            (df["EXAM_SCORE"] > MAX_EXAM)
+]
+
+        if not invalid_rows.empty:
+            st.error("Some rows have invalid CA or EXAM_SCORE values")
+            st.dataframe(invalid_rows)
+            st.stop()
+
+    except Exception as e:
+        st.error(f"CSV read error: {e}")
+        return
+
+    st.dataframe(df, use_container_width=True)
+
+    if not required_cols.issubset(df.columns):
+        st.error(f"CSV must contain columns: {', '.join(required_cols)}")
+        return
+
+    # Selections
+    class_code = st.selectbox("Class", getClassrooms())
+    if not class_code:
+        return
+
+    clss = Class.query.filter_by(code=class_code).one_or_none()
+    if not clss:
+        st.error("Invalid class selected")
+        return
+
+    terms = term_list()
+    selected_term = st.selectbox(
+        "Term",
+        terms,
+        index=terms.index(current_term())
+    )
+
+    subjects = getclassSubjects(class_code)
+    subject_name = st.selectbox("Subject", subjects)
+
+    if not st.button("Upload Scores"):
+        return
+
+    # Upload loop
+    for row in df.itertuples(index=False):
+        if row.CA < 0 or row.CA > 30:
+            st.error(f"Invalid CA ({row.CA}) for ID {row.ID}")
+            continue
+
+        if row.EXAM_SCORE < 0 or row.EXAM_SCORE > 70:
+            st.error(f"Invalid EXAM score ({row.EXAM_SCORE}) for ID {row.ID}")
+            continue
+        std = Student.query.filter_by(admission_no=row.ID).one_or_none()
+
+        if not std:
+            st.error(f"Student with admission number {row.ID} not found")
+            continue
+
+        if std.classroom_id != clss.id:
+            st.error(f"{std.fullName} is not in {class_code}")
+            continue
+
+        sub = Subject.query.filter_by(
+            name=subject_name,
+            student_id=std.id,
+            term=selected_term,
+            session=current_session(),
+        ).one_or_none()
+
+        if not sub:
+            sub = Subject(
+                name=subject_name,
+                student_id=std.id,
+                term=selected_term,
+                session=current_session(),
+                CA=row.CA,
+                examScore=row.EXAM_SCORE,
+            )
+            sub.save()
+            st.info(f"Scores added for {std.fullName}")
+        else:
+            sub.CA = row.CA
+            sub.examScore = row.EXAM_SCORE
+            sub.save()
+            st.info(f"Scores updated for {std.fullName}")
+
+    st.success("Scores uploaded successfully ✅")
+
 
 upload_CSV_record()
