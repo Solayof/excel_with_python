@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 from sqlalchemy import or_
 import streamlit as st
@@ -13,6 +14,8 @@ from models.portal.department import Department
 from models.portal.user import User
 from pages import session_auth
 
+logger = logging.getLogger(__name__)
+
 def login():
 
     username = st.text_input("Username", placeholder="Username")
@@ -24,7 +27,9 @@ def login():
             session_id = session_auth.create_session(user.id)
             st.session_state["session_id"] = session_id
             st.success("Login successful")
+            logger.info(f"User {user.fullName} logged in")
             return True
         else:
+            logger.warning(f"Failed login attempt for username: {username}")
             st.error("Invalid username or password")
             return False

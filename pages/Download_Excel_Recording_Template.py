@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+import logging
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -25,6 +26,10 @@ if not current_user:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
 if current_user.isAdmin() is False:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
+
+# logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 
 st.set_page_config(
@@ -95,6 +100,7 @@ def template_sheet():
             # Freeze header row
             ws.freeze_panes = "A2"
             wb.save(f"template-{code}.xlsx")
+            logger.info(f"Generated template-{code}.xlsx successfully by {current_user.fullName}")
             st.success(f"sheet with file name: template-{code}.xlsx generated successfully")
         try:
             with open(f"template-{clss.code}.xlsx", "rb") as file:
@@ -108,4 +114,8 @@ def template_sheet():
         except FileNotFoundError:
             st.error("Generate sheet for the class first")
 
-template_sheet()
+try:
+    template_sheet()
+except Exception as e:
+    logger.error(f"Error in generating template sheet: {e}")
+    st.error("An error occurred while generating the template sheet.")

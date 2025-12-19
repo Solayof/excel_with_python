@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -11,6 +12,8 @@ from models.portal.teacher import Teacher
 from models.portal.department import Department
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -52,7 +55,12 @@ def create_department():
             st.warning(f"Department {name} exists")
             return
         depart.save()
+        logger.info(f"Department {name} created by {current_user.fullName}")
         st.success(f"Department {name} created successfully")
         st.dataframe(pd.DataFrame([depart.to_dict()]))
 
-create_department()
+try:
+    create_department()
+except Exception as e:
+    logger.error(f"Error in creating department: {e}")
+    st.error("An error occurred while creating the department.")

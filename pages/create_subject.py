@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -23,6 +24,8 @@ from models.portal.subject import Subject
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -91,9 +94,10 @@ def create_subject():
         if not subject.student_id:
             st.error("score can not be save, no student attached")
         subject.save()
+        logger.info(f"Score for {subjectname} recorded for {name} in {term} {current_session()} academic session by {current_user.fullName}")
         st.success("score save successfully")
-# try:
-#     create_subject()
-# except Exception as e:
-#     st.error(f"An error occurred: {e}")
-create_subject()
+try:
+    create_subject()
+except Exception as e:
+    st.error(f"An error occurred: {e}")
+    logger.error(f"Error in creating subject score: {e}")

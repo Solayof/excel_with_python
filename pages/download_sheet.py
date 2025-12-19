@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -22,6 +23,8 @@ from models.portal.subject import Subject
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -48,17 +51,21 @@ def download_sheet():
     code = st.selectbox("Class", getClassrooms())
     if code:
         clss = Class.query.filter_by(code=code).one_or_none()
+        if st.button("Generate Sheet") and clss:
+            clss.generateSheet(term='First Term')
+            logger.info(f"Sheet generated for class {code} by {current_user.fullName}")
+            st.success(f"sheet with file name: {code}.xlsx generated successfully")
 
-        try:
-            with open(f"{clss.code}.xlsx", "rb") as file:
-                st.download_button(
-                    label=f"Download {clss.code}.xlsx file",
-                    data=file,
-                    file_name=f"{clss.code}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
-                )
-                
-        except FileNotFoundError:
-            st.error("Generate sheet for the class first")
+    try:
+        with open(f"{code}.xlsx", "rb") as file:
+            st.download_button(
+                label=f"Download {code}.xlsx file",
+                data=file,
+                file_name=f"{code}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
+            )
+            
+    except FileNotFoundError:
+        st.error("Generate sheet for the class first")
 
 download_sheet()

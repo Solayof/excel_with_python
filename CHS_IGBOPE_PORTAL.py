@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -25,6 +26,7 @@ from pages import session_auth
 from utils.login import login
 from utils.logout import logout
 
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     storage.create_table()
@@ -46,6 +48,7 @@ def viewStream():
         st.success(f"Welcome {current_user.fullName}")
         if st.button("Logout"):
             logout()
+            logger.info(f"User {current_user.fullName} logged out")
             st.rerun()
     
  

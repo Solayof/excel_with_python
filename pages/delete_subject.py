@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -22,6 +23,8 @@ from models.portal.department import Department
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -70,6 +73,10 @@ def delete_subject():
                 st.write(f"CA: {subject.CA}, Exam Score: {subject.examScore}, Total Score: {subject.totalScore}")
                 if st.button("Delete"):
                     subject.delete()
+                    logger.info(f"Subject score for {subjectname} deleted for {name} in {term} {session} academic session by {current_user.fullName}")
                     st.success("Subject score deleted successfully")
-
-delete_subject()
+try:
+    delete_subject()
+except Exception as e:
+    logger.error(f"Error in deleting subject score: {e}")
+    st.error("An error occurred while deleting the subject score.")

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -12,6 +13,8 @@ from models.portal.teacher import Teacher
 from models.portal.department import Department
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -52,7 +55,11 @@ def update_department_subject():
             depart.subjects = selected_subjects
             flag_modified(depart, "subjects")
             depart.save()
+            logger.info(f"Department {name} updated by {current_user.fullName}")
             st.success(f"Department {name} updated successfully")
             st.dataframe(pd.DataFrame([depart.to_dict()]))
- 
-update_department_subject()
+try:
+    update_department_subject()
+except Exception as e:
+    logger.error(f"Error in updating department: {e}")
+    st.error("An error occurred while updating the department.")

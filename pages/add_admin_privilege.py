@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -18,6 +19,8 @@ from models.portal.admin import Admin
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -64,7 +67,11 @@ def admin_privileges():
                 st.error("Permission Denial")
                 return
             admin.save()
+            logger.info(f"Admin privileges {privileges} granted to {name} by {current_user.fullName}")
             st.success("Privileges granted")
             
-
-admin_privileges()
+try:
+    admin_privileges()
+except Exception as e:
+    logger.error(f"Error in adding admin privileges: {e}")
+    st.error("An error occurred while adding admin privileges.")

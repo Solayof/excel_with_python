@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -16,7 +17,7 @@ from models.portal.subject import Subject
 from models.portal.user import User
 from pages import session_auth
 
-
+logger = logging.getLogger(__name__)
 current_user = session_auth.current_user()
 if not current_user:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
@@ -53,7 +54,12 @@ def change_class():
         if st.button("Change Class") and stud and clss_to:
             stud.classroom_id = clss_to.id
             stud.save()
+            logger.info(f"Student {stud.fullName} changed to class {clss_to.code} by {current_user.fullName}")
             st.dataframe(pd.DataFrame([stud.to_dict()]))
             st.success("Class changed successfully")
 
-change_class()
+try:
+    change_class()
+except Exception as e:
+    logger.error(f"Error in changing class: {e}")
+    st.error("An error occurred while changing class.")

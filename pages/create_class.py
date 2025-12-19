@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -15,6 +16,8 @@ from models.portal.subject import Subject
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -47,7 +50,12 @@ def create_class():
             st.warning(f"class {clss.code} exists")
             return
         clss.save()
+        logger.info(f"class {clss.code} created by {current_user.fullName}")
         st.success(f"class {clss.code} created successfully")
 
-create_class()
+try:
+    create_class()
+except Exception as e:
+    logger.error(f"Error in creating class: {e}")
+    st.error("An error occurred while creating the class.")
     

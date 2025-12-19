@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -15,6 +16,8 @@ from models.portal.department import Department
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -62,7 +65,12 @@ def edit_student():
                 stud.password = stud.lastName
 
             stud.save()
+            logger.info(f"Student {stud.fullName} updated by {current_user.fullName}")
             st.dataframe(pd.DataFrame([stud.to_dict()]))
             st.success("Updated successfuly")
 
-edit_student()
+try:
+    edit_student()
+except Exception as e:
+    logger.error(f"Error in editing student: {e}")
+    st.error("An error occurred while editing the student.")

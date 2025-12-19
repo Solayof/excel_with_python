@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -16,6 +17,7 @@ from models.portal.subject import Subject
 from models.portal.user import User
 from pages import session_auth
 
+logger = logging.getLogger(__name__)
 current_user = session_auth.current_user()
 if not current_user:
     st.switch_page("CHS_IGBOPE_PORTAL.py")
@@ -50,7 +52,12 @@ def delete_student():
             student = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
         if st.button(f"Delete {name}") and name and student:
             student.delete()
+            logger.info(f"Student {student.fullName} deleted by {current_user.fullName}")
             st.success(f"{student.fullName} deleted successfully")
             st.dataframe(pd.DataFrame([student.to_dict()]))
 
-delete_student()    
+try:
+    delete_student()
+except Exception as e:
+    logger.error(f"Error in deleting student: {e}")
+    st.error("An error occurred while deleting the student.")

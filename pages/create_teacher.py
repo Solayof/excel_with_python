@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -11,6 +12,8 @@ from models.portal.teacher import Teacher
 from models.portal.department import Department
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -92,6 +95,11 @@ def create_teacher():
         teacher.address = address
         teacher.email = email
         teacher.save()
+        logger.info(f"Teacher {teacher.fullName} created by {current_user.fullName}")
         st.success(f"{teacher.fullName} created successfuly with id: {teacher.id}")
 
-create_teacher()
+try:
+    create_teacher()
+except Exception as e:
+    logger.error(f"Error in creating teacher: {e}")
+    st.error("An error occurred while creating the teacher.")

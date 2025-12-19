@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -22,6 +23,8 @@ from models.portal.subject import Subject
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -154,13 +157,16 @@ def upload_CSV_record():
                 examScore=row.EXAM_SCORE,
             )
             sub.save()
+            logger.info(f"Scores for {std.fullName} in subject {subject_name} added in class {class_code} for term {selected_term} session {current_session()} by {current_user.fullName}")
             st.info(f"Scores added for {std.fullName}")
         else:
             sub.CA = row.CA
             sub.examScore = row.EXAM_SCORE
             sub.save()
             st.info(f"Scores updated for {std.fullName}")
+            logger.info(f"Scores for {std.fullName} in subject {subject_name} updated in class {class_code} for term {selected_term} session {current_session()} by {current_user.fullName}")
 
+    logger.info(f"Scores for subject {subject_name} in class {class_code} for term {selected_term} session {current_session()} uploaded by {current_user.fullName}")
     st.success("Scores uploaded successfully ✅")
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 from io import BytesIO, StringIO
+import logging
 import numpy as np
 import streamlit as st
 import pandas as pd
@@ -22,6 +23,8 @@ from models.portal.subject import Subject
 
 from models.portal.user import User
 from pages import session_auth
+
+logger = logging.getLogger(__name__)
 
 current_user = session_auth.current_user()
 if not current_user:
@@ -97,4 +100,8 @@ def class_performance():
                 fig2 = px.pie(grade_dist, names="Grade", values="Count", title="Grade Breakdown")
                 st.plotly_chart(fig2)
 
-class_performance()
+try:
+    class_performance()
+except Exception as e:
+    logger.error(f"Error in class performance analytics: {e}")
+    st.error("An error occurred while generating class performance analytics.")
