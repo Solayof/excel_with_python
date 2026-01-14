@@ -49,10 +49,17 @@ st.title("Download Sheet")
 def download_sheet():
     st.header("Download Sheet")
     code = st.selectbox("Class", getClassrooms())
+    term_lists = term_list()
+    term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
+    sessions = session_list()
+    current_sess = current_session()
+    if current_sess not in sessions:
+        sessions.append(current_sess)
+    session = st.selectbox("Session", sessions, index=sessions.index(current_sess))
     if code:
         clss = Class.query.filter_by(code=code).one_or_none()
         if st.button("Generate Sheet") and clss:
-            clss.generateSheet(term='First Term')
+            clss.generateSheet(term=term, session=session)
             logger.info(f"Sheet generated for class {code} by {current_user.fullName}")
             st.success(f"sheet with file name: {code}.xlsx generated successfully")
 

@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import getClassrooms, getClassroom, getStudentById, getStudentsIdandNames, getclassSubjects
+from models.cache import getClassrooms, getClassroom, getCurrentClassrooms, getStudentById, getStudentsIdandNames, getclassSubjects
 from models.portal.admission import Admission
 from models.portal.Class import Class
 
@@ -38,7 +38,7 @@ st.set_page_config(
 st.title("Edit Students")
 
 def edit_student():
-    code = st.selectbox("Class", getClassrooms())
+    code = st.selectbox("Class", getCurrentClassrooms())
     name = None
     if code:
         fullNameId = getStudentsIdandNames(code)

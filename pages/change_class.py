@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import getClassrooms, getClassroom, getStudentById, getStudentsIdandNames, getclassSubjects
+from models.cache import getClassrooms, getClassroom, getCurrentClassrooms, getStudentById, getStudentsIdandNames, getclassSubjects
 from models.portal.admission import Admission
 from models.portal.Class import Class
 from models.portal.department import Department
@@ -47,7 +47,7 @@ def change_class():
 
         if name:
             stud = Student.query.filter(Student.id==fullNameId[name]).one_or_none()
-    class_to_code = st.selectbox("Class To", [room for room in getClassrooms() if room != code])
+    class_to_code = st.selectbox("Class To", [room for room in getCurrentClassrooms() if room != code])
     if class_to_code:
         clss_to = Class.query.filter_by(code=class_to_code).one()
 

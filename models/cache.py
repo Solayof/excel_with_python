@@ -6,6 +6,7 @@ import streamlit as st
 from models.portal.admission import Admission
 from models.portal.Class import Class
 
+from models.portal.cache import current_session
 from models.portal.department import Department
 from models.portal.student import Student
 from models.portal.subject import Subject
@@ -16,6 +17,11 @@ from models.portal.user import User
 @st.cache_data(ttl=3600)
 def getClassrooms():
     return Class.all()
+
+@st.cache_data(ttl=3600)
+def getCurrentClassrooms():
+    classes = Class.query.filter_by(session=current_session()).all()
+    return [cla.code for cla in classes]
 
 @st.cache_data(ttl=360)
 def getStudentsIdandNames(code):
@@ -80,6 +86,8 @@ def students_without_subject_dict(subject_name, term, session, classroom_id=None
           session=session,
           classroom_id=classroom_id
           )
+     students.sort(key=lambda s: s.fullName)
+     students.sort(key=lambda s: s.gender, reverse=True)
      return {student.fullName: student.id for student in students}
 
 @st.cache_data(ttl=36000)
@@ -96,4 +104,6 @@ def students_with_subject_dict(subject_name, term, session, classroom_id=None):
           session=session,
           classroom_id=classroom_id
           )
+     students.sort(key=lambda s: s.fullName)
+     students.sort(key=lambda s: s.gender, reverse=True)
      return {student.fullName: student.id for student in students}

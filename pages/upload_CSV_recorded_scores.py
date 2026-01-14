@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (getClassrooms,
-                          getClassroom,
+                          getClassroom, getCurrentClassrooms,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
@@ -99,7 +99,7 @@ def upload_CSV_record():
         return
 
     # Selections
-    class_code = st.selectbox("Class", getClassrooms())
+    class_code = st.selectbox("Class", getCurrentClassrooms())
     if not class_code:
         return
 

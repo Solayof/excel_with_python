@@ -50,7 +50,21 @@ def viewStream():
             logout()
             logger.info(f"User {current_user.fullName} logged out")
             st.rerun()
-    
+    if "session_id" in st.session_state:
+        lastname = st.text_input("Search by Last Name")
+
+        if lastname:
+            students = Student.search_by_last_name(lastname)
+            for stud in students:
+                st.write(f"{stud.fullName} - {stud.admission_no} - Class: {stud.classroom.className if stud.classroom else 'N/A'}")
+        
+        adm_no = st.text_input("Search by Admission Number")
+
+        if adm_no:
+            students = Student.search_by_admission_no(adm_no)
+            for stud in students:
+                st.write(f"{stud.fullName} - {stud.admission_no} - Class: {stud.classroom.className if stud.classroom else 'N/A'}")
+        st.selectbox("List of student in Database", [s.fullName for s in Student.query.all()])
  
 viewStream()
 

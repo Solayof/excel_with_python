@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import (get_classroom_id, getClassrooms, getclassSubjects,
+from models.cache import (get_classroom_id, getClassrooms, getCurrentClassrooms, getclassSubjects,
                           students_with_subject_dict)
 from models.portal.admission import Admission
 from models.portal.cache import current_session, current_term, term_list
@@ -44,7 +44,7 @@ def edit_subject():
     st.header("Update Scores")
     stud = None
     term = None
-    code = st.selectbox("Class", getClassrooms())
+    code = st.selectbox("Class", getCurrentClassrooms())
     subjectlist = getclassSubjects(code)
     subjectname = st.selectbox("Subject", subjectlist)
     term_lists = term_list()

@@ -191,6 +191,31 @@ class Student(Admission):
         # Optional: limit to a classroom
         if classroom_id:
             query = query.filter(cls.classroom_id == classroom_id)
-
+        
         return query.all()
+    
+    @classmethod
+    def search_by_last_name(cls, last_name):
+        """search students by last name
+
+        Args:
+            last_name (_type_): last name to search
+
+        Returns:
+            _type_: list of students
+        """        
+        return cls.query.filter(cls.lastName.ilike(f"%{last_name}%")).all()
+    
+    @classmethod
+    def search_by_admission_no(cls, admission_no):
+        """search students by admission number
+
+        Args:
+            admission_no (_type_): admission number to search
+
+        Returns:
+            _type_: list of students
+        """        
+        return cls.query.filter(cls.admission_no.ilike(f"%{admission_no}%")).all()
+    
   

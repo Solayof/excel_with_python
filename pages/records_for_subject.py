@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (getClassrooms,
-                          getClassroom,
+                          getClassroom, getCurrentClassrooms,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
@@ -48,7 +48,7 @@ st.title("View Student Subject Score")
 
 def record_for_subject():
     st.header("Subject Recorded")
-    code = st.selectbox("Class", getClassrooms())
+    code = st.selectbox("Class", getCurrentClassrooms())
     subject = None
     students = []
     subjectlist = []

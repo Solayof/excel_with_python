@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (getClassrooms,
-                          getClassroom,
+                          getClassroom, getCurrentClassrooms,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
@@ -47,7 +47,7 @@ st.title("View Student Subject Score")
 
 def report_sheet():
     st.header("Report Sheet")
-    code = st.selectbox("Class", getClassrooms())
+    code = st.selectbox("Class", getCurrentClassrooms())
 
     if code:
         stud = Student.get(current_user.id)

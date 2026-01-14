@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (getClassrooms,
-                          getClassroom,
+                          getClassroom, getCurrentClassrooms,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
@@ -58,7 +58,7 @@ def upload_Excel_template():
     if excel_file:
         code = None
         clss = None
-        df = pd.read_excel(excel_file)
+        df = pd.read_excel(excel_file, dtype={"ID": str})
         df.columns = df.columns.str.strip().str.upper()
         df["ID"] = df["ID"].astype(str).str.strip()
         MAX_CA = 30
@@ -86,7 +86,7 @@ def upload_Excel_template():
         if not requiured_cols.issubset(df.columns):
             st.error(f"Excel must have columns: {', '.join(requiured_cols)}")
             return
-        code = st.selectbox("Class", getClassrooms())
+        code = st.selectbox("Class", getCurrentClassrooms())
         if code:
             clss = Class.query.filter_by(code=code).one_or_none()
             term_lists = term_list()

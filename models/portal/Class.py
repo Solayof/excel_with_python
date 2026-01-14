@@ -110,6 +110,7 @@ class Class(BaseModel, Base):
     def generateSheet(self, term=None, session=None):
         students = self.students
         students.sort(key=lambda s: s.fullName)
+        students.sort(key=lambda s: s.gender, reverse=True)
         sheetName = None
         if term == 'First Term':
             sheetName = '1ST TERM Db'
