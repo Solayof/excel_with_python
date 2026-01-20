@@ -48,7 +48,7 @@ st.title("View Student Subject Score")
 def upload_CSV_record():
     st.subheader("Upload Student Subject Scores")
 
-    csv_text = st.text_area("Paste your CSV text here")
+    csv_text = st.text_area("Paste your CSV text here", value="ID,FULL_NAME,CA,EXAM_SCORE")
     csv_file = st.file_uploader("Or upload CSV file", type="csv")
 
     required_cols = {"ID", "FULL_NAME", "CA", "EXAM_SCORE"}
