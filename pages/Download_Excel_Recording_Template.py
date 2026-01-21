@@ -10,9 +10,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from models.cache import (getClassrooms)
+from models.cache import (getClassrooms, getCurrentClassrooms, getclassSubjects)
 from models.portal.admission import Admission
 from models.portal.Class import Class
+from models.portal.cache import current_session, current_term, term_list
 from models.portal.department import Department
 
 from models.portal.student import Student
@@ -47,7 +48,9 @@ st.title("Recording Template")
 
 
 def template_sheet():
-        code = st.selectbox("Class", getClassrooms())
+        code = st.selectbox("Class", getCurrentClassrooms())
+        term_lists = term_list()
+        term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
         wb = Workbook()
         wb.properties.creator = "Solayof Pragmatics ICT Hub"
         wb.properties.description = (
@@ -65,6 +68,8 @@ def template_sheet():
         wb.properties.title = f"{code} Students scores"
         clss = None
         if code:
+            subjectlist = getclassSubjects(code)
+            subjectname = st.selectbox("Subject", subjectlist)
             clss = Class.query.filter_by(code=code).one_or_none()
         if st.button("Generate Template") and clss:
             ws = wb.active
@@ -113,7 +118,60 @@ def template_sheet():
                 
         except FileNotFoundError:
             st.error("Generate sheet for the class first")
+        if st.button(f"Generate Template for {subjectname}") and subjectname and clss:
+            ws = wb.active
+            ws.title = code
+            ws.append(["ID", "FULL_NAME", "CA", "EXAM_SCORE"])
+            students = Student.students_without_subject(
+                subject_name=subjectname,
+                session=current_session(),
+                classroom_id=clss.id,
+                term=term
+            )
 
+            for student in students:
+                 ws.append([student.admission_no, student.fullName])
+            
+            # Adjust FULL_NAME column width
+            full_name_col = 2  # FULL_NAME is column B
+            max_length = len("FULL_NAME")
+
+            for row in ws.iter_rows(min_row=2, min_col=full_name_col, max_col=full_name_col):
+                for cell in row:
+                    if cell.value:
+                        max_length = max(max_length, len(str(cell.value)))
+
+            ws.column_dimensions[get_column_letter(full_name_col)].width = max_length + 5
+
+            # Enforce UNIQUE IDs in column A
+            id_validation = DataValidation(
+                type="custom",
+                formula1="=COUNTIF($A:$A,A1)=1",
+                allow_blank=True,
+                showErrorMessage=True,
+                error="Admission number must be UNIQUE",
+                errorTitle="Duplicate ID"
+            )
+
+            ws.add_data_validation(id_validation)
+            id_validation.add(f"A2:A1048576")  # Apply to entire column
+
+            # Freeze header row
+            ws.freeze_panes = "A2"
+            wb.save(f"{subjectname}-template-{code}.xlsx")
+            logger.info(f"Generated {subjectname}-template-{code}.xlsx successfully by {current_user.fullName}")
+            st.success(f"sheet with file name: {subjectname}-template-{code}.xlsx generated successfully")
+        try:
+            with open(f"{subjectname}-template-{clss.code}.xlsx", "rb") as file:
+                st.download_button(
+                    label=f"Download {subjectname}-template-{clss.code}.xlsx file",
+                    data=file,
+                    file_name=f"{subjectname}-template-{clss.code}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
+                )
+                
+        except FileNotFoundError:
+            st.error(f"Generate sheet for {subjectname} first")
 try:
     template_sheet()
 except Exception as e:
