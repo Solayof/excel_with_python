@@ -50,11 +50,11 @@ def session_list():
 
 st.cache_data(ttl=30000)
 def grade(score):
-                    if score >= 70: return "A"
-                    elif score >= 60: return "B"
-                    elif score >= 50: return "C"
-                    elif score >= 40: return "D"
-                    else: return "F"
+    if score >= 70: return "A"
+    elif score >= 60: return "B"
+    elif score >= 50: return "C"
+    elif score >= 40: return "D"
+    else: return "F"
 
 st.cache_data(ttl=30000)
 def departs_name_with_id():
@@ -69,7 +69,7 @@ def teacher_name_id():
     name_and_Id = {teacher.fullName: teacher.id for teacher in teachers}
     return name_and_Id
 
-st.cache_data(ttl=30)
+st.cache_data(ttl=3)
 def students_without_subject(subject_name, term, session, classroom_id=None):
      return Student.students_without_subject(
           subject_name=subject_name,
@@ -78,7 +78,7 @@ def students_without_subject(subject_name, term, session, classroom_id=None):
           classroom_id=classroom_id
           )
 
-st.cache_data(ttl=30)
+st.cache_data(ttl=3)
 def students_without_subject_dict(subject_name, term, session, classroom_id=None):
      students = Student.students_without_subject(
           subject_name=subject_name,
@@ -107,3 +107,12 @@ def students_with_subject_dict(subject_name, term, session, classroom_id=None):
      students.sort(key=lambda s: s.fullName)
      students.sort(key=lambda s: s.gender, reverse=True)
      return {student.fullName: student.id for student in students}
+
+
+st.cache_data(ttl=3600)
+def courses():
+    depart = Department.query.all()
+    subjs = []
+    for dept in depart:
+        subjs.extend(dept.subjects)
+    return set(subjs)

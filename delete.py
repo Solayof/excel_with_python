@@ -23,7 +23,6 @@ from models.portal.session import Session
 from models.portal.admin import Admin
 from pages import session_auth
 
-students = Student.search_by_last_name("thomas")
-for stud in students:
-    if not stud.subjects:
-        print(f"{stud.fullName} - {stud.admission_no} - Class: {stud.classroom.className if stud.classroom else 'N/A'}")
+student = Student.query.filter_by(admission_no="0088").all()
+# student[0].delete()
+# print(student[0].subjects)

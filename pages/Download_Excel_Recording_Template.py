@@ -76,7 +76,7 @@ def template_sheet():
             ws.title = code
             ws.append(["ID", "FULL_NAME", "CA", "EXAM_SCORE"])
             for student in clss.students:
-                 ws.append([student.admission_no, student.fullName])
+                 ws.append([student.id, student.fullName])
 
             # Adjust FULL_NAME column width
             full_name_col = 2  # FULL_NAME is column B
@@ -130,7 +130,7 @@ def template_sheet():
             )
 
             for student in students:
-                 ws.append([student.admission_no, student.fullName])
+                 ws.append([student.id, student.fullName])
             
             # Adjust FULL_NAME column width
             full_name_col = 2  # FULL_NAME is column B
@@ -158,20 +158,20 @@ def template_sheet():
 
             # Freeze header row
             ws.freeze_panes = "A2"
-            wb.save(f"{subjectname}-template-{code}.xlsx")
-            logger.info(f"Generated {subjectname}-template-{code}.xlsx successfully by {current_user.fullName}")
-            st.success(f"sheet with file name: {subjectname}-template-{code}.xlsx generated successfully")
+            wb.save(f"{subjectname}-{term}-template-{clss.code}.xlsx")
+            logger.info(f"Generated {subjectname}-{term}-template-{clss.code}.xlsx successfully by {current_user.fullName}")
+            st.success(f"sheet with file name: {subjectname}-{term}-template-{clss.code}.xlsx generated successfully")
         try:
-            with open(f"{subjectname}-template-{clss.code}.xlsx", "rb") as file:
+            with open(f"{subjectname}-{term}-template-{clss.code}.xlsx", "rb") as file:
                 st.download_button(
-                    label=f"Download {subjectname}-template-{clss.code}.xlsx file",
+                    label=f"Download {subjectname}-{term}-template-{clss.code}.xlsx file",
                     data=file,
-                    file_name=f"{subjectname}-template-{clss.code}.xlsx",
+                    file_name=f"{subjectname}-{term}-template-{clss.code}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
                 )
                 
         except FileNotFoundError:
-            st.error(f"Generate sheet for {subjectname} first")
+            st.error(f"Generate sheet for {subjectname}-{term} first")
 try:
     template_sheet()
 except Exception as e:

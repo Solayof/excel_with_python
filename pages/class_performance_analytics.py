@@ -67,7 +67,7 @@ def class_performance():
             # Collect student performance
             performance_data = []
             for student in students:
-                scores = student.total_scores_per_subjects(session=session)
+                scores = student.total_scores_per_subjects(session=session, term=term)
                 if scores:
                     performance_data.append({
                         "Name": student.fullName,

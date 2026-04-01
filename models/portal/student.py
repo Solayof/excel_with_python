@@ -147,9 +147,9 @@ class Student(Admission):
 
         return sub_dict
     
-    def total_scores_per_subjects(self, session=None):
+    def total_scores_per_subjects(self, session=None, term=None):
         subs = {}
-        for sub in self.subject_recorded(session=session):
+        for sub in self.subject_recorded(session=session, term=term):
             sub_dict = self.records_for_subject(subject=sub, session=session)
             subs[sub] = sum(sub_dict.values())
         return subs

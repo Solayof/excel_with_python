@@ -102,10 +102,12 @@ def upload_Excel_template():
                 if row.EXAM_SCORE < 0 or row.EXAM_SCORE > 70:
                     st.error(f"Invalid EXAM score ({row.EXAM_SCORE}) for ID {row.ID}")
                     continue
-                std = Student.query.filter_by(admission_no=row.ID).one_or_none()
+                std = Student.query.filter_by(id=row.ID).one_or_none()
                 if std is None:
-                    st.error(f"Student with admission number {row.ID} not found")
-                    continue
+                    std = Student.query.filter_by(admission_no=row.ID).one_or_none()
+                    if std is None:
+                        st.error(f"Student with admission number {row.ID} not found")
+                        continue
                 if std.classroom_id != clss.id:
                     st.error(f"Student {std.fullName} not in class {code}")
                     continue

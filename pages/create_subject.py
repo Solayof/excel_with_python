@@ -66,15 +66,15 @@ def create_subject():
 
     if st.button("upload score") and name and subjectname and ca and exam and student:
         mth = datetime.now().strftime("%m")
-        if term == "First Term" and mth not in ['09', '10', '11', '12']:
-            st.warning("You are recording first term score outside first term period")
-            return
-        if term == "Second Term" and mth not in ['01', '02', '03', '04']:
-            st.warning("You are recording second term score outside second term period")
-            return
-        if term == "Third Term" and mth not in ['05', '06', '07', '08']:
-            st.warning("You are recording third term score outside third term period")
-            return
+        # if term == "First Term" and mth not in ['09', '10', '11', '12']:
+        #     st.warning("You are recording first term score outside first term period")
+        #     return
+        # if term == "Second Term" and mth not in ['01', '02', '03', '04']:
+        #     st.warning("You are recording second term score outside second term period")
+        #     return
+        # if term == "Third Term" and mth not in ['05', '06', '07', '08']:
+        #     st.warning("You are recording third term score outside third term period")
+        #     return
         sub  = Subject.query.filter_by(
                     name=subjectname,
                     student_id=student.id,
