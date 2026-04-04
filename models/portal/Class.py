@@ -98,6 +98,7 @@ class Class(BaseModel, Base):
     def fill_subjects_to_db_sheet(self, sheetName):
         worksheet = self.getSheet()
         worksheet.open_session()
+        print("sheet", sheetName)
         sheet = worksheet.getDbsheet(sheetName=sheetName)
         cell ="CK6"
         row, col = coordinate_to_tuple(cell)
@@ -118,7 +119,7 @@ class Class(BaseModel, Base):
             sheetName = "2ND TERM Db "
         else:
             sheetName = '3RD TERM Db'
-        if self.department.name.lower() != 'general':
+        if self.department.name.lower() != 'general' and term == 'First Term':
             self.fill_subjects_to_db_sheet(sheetName)
         worksheet = self.getSheet()
         worksheet.open_session()
@@ -127,9 +128,9 @@ class Class(BaseModel, Base):
 
         stdcell = "b4"
         stdrow, stdcol = coordinate_to_tuple(stdcell)
-        subject_dict = worksheet.get_subject_dict(sheetName=sheetName)
-        for key, value in subject_dict.items():
-            print(key, value)
+        subject_dict = worksheet.get_subject_dict(sheetName='1ST TERM Db')
+        # for key, value in subject_dict.items():
+        #     print(key, value)
         for student in students:
             sheet.cell(stdrow, stdcol, student.fullName)
             subjects = student.term_subject(term=term, session=session)
@@ -140,13 +141,17 @@ class Class(BaseModel, Base):
             sheet.cell(stdrow, stdcol + 2, student.gender)
             sheet.cell(stdrow, stdcol + 3, student.classroom.className)
             for subject in subjects:
-                subCell = subject_dict[subject.name]
+                try:
+                    subCell = subject_dict[subject.name]
+                    _, subcol = coordinate_to_tuple(subCell)
+
+                    sheet.cell(stdrow, subcol - 1, subject.CA)
+
+                    sheet.cell(stdrow, subcol, subject.examScore)
+                except Exception:
+                    continue
                 print(subject.name, subCell)
-                _, subcol = coordinate_to_tuple(subCell)
-
-                sheet.cell(stdrow, subcol - 1, subject.CA)
-
-                sheet.cell(stdrow, subcol, subject.examScore)
+                
                
             stdrow = stdrow + 1
 

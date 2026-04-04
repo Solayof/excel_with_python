@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (getClassrooms,
-                          getClassroom,
+                          getClassroom, getCurrentClassrooms,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
@@ -46,7 +46,7 @@ st.title("Class Performance analytics")
 
 def class_performance():
     st.header("📈 Performance Analytics")
-    code = st.selectbox("Select Class", getClassrooms())
+    code = st.selectbox("Select Class", getCurrentClassrooms())
     term = None
     students = []
     if code:

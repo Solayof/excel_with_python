@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 from models.cache import (getClassrooms,
-                          getClassroom,
+                          getClassroom, getCurrentClassrooms,
                           getStudentById,
                           getStudentsIdandNames,
                           getclassSubjects,
@@ -48,7 +48,7 @@ st.title("Download Sheet")
 
 def download_sheet():
     st.header("Download Sheet")
-    code = st.selectbox("Class", getClassrooms())
+    code = st.selectbox("Class", getCurrentClassrooms())
     term_lists = term_list()
     term = st.selectbox("Term", term_lists, index=term_lists.index(current_term()))
     sessions = session_list()

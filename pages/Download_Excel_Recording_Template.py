@@ -128,6 +128,11 @@ def template_sheet():
                 classroom_id=clss.id,
                 term=term
             )
+            print(students is None)
+
+            if not students:
+                st.warning(f"No student without record {term} {current_session()} academic session in {subjectname}")
+                return
 
             for student in students:
                  ws.append([student.id, student.fullName])
